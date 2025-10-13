@@ -1,0 +1,30 @@
+# ARCHIVOS SENSIBLES - NO SUBIR A GITHUB
+connect.php
+config.php
+*.env
+
+# BASE DE DATOS - NO SUBIR
+*.sql
+*.db
+*.sqlite
+
+# ARCHIVOS DE LOGS
+*.log
+error_log
+
+# ARCHIVOS TEMPORALES DEL SISTEMA
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# CARPETAS DE CACHE
+cache/
+tmp/
+tcpdf/cache/
+
+# CARPETAS DE EDITORES DE CÓDIGO
+.vscode/
+.idea/
+
+# ARCHIVOS DE SESIÓN PHP
+sess_*
