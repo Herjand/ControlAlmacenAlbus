@@ -28,3 +28,22 @@ Sistema PHP para gestión de almacén con roles de administrador y operario.
 - Base de datos: `albus_gestion_almacen`
 - Usuario: Personalizar según entorno
 - Password: Personalizar según entorno
+
+## Base de Datos
+
+### Estructura
+- Nombre: `albus_gestion_almacen`
+- Archivo: `database/database.sql`
+
+### Instalación
+1. Crear base de datos: `CREATE DATABASE albus_gestion_almacen;`
+2. Importar: `mysql -u root -p albus_gestion_almacen < database/database.sql`
+3. Configurar `connect.php` con tus credenciales
+
+### Configuración de connect.php
+Copiar `connect.example.php` a `connect.php` y configurar:
+```php
+$servername = "localhost";
+$username = "root"; 
+$password = "tu_password";
+$dbname = "albus_gestion_almacen";
