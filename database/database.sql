@@ -1,276 +1,245 @@
--- MariaDB dump 10.19  Distrib 10.4.32-MariaDB, for Win64 (AMD64)
---
--- Host: localhost    Database: albus_gestion_almacen
--- ------------------------------------------------------
--- Server version	10.4.32-MariaDB
+-- =====================================================
+-- SCRIPT CORREGIDO Y OPTIMIZADO - ALBUS GESTIÓN ALMACÉN
+-- Compatible con MariaDB / phpMyAdmin / GitHub
+-- Fecha: 2025-10-17
+-- =====================================================
 
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
-/*!40103 SET TIME_ZONE='+00:00' */;
-/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
-/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
-/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
-/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+-- Eliminar base de datos anterior y crear una nueva
+DROP DATABASE IF EXISTS albus_gestion_almacen;
+CREATE DATABASE albus_gestion_almacen CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+USE albus_gestion_almacen;
 
---
--- Table structure for table `clientes`
---
+-- =====================================================
+-- TABLA: usuarios
+-- =====================================================
+CREATE TABLE usuarios (
+    id_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    correo VARCHAR(50) NOT NULL UNIQUE,
+    contrasena VARCHAR(64) NOT NULL, -- Hash SHA256
+    rol VARCHAR(20) NOT NULL, -- 'Administrador' o 'Operario'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
-DROP TABLE IF EXISTS `clientes`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `clientes` (
-  `id_cliente` int(11) NOT NULL AUTO_INCREMENT,
-  `empresa` varchar(50) NOT NULL,
-  `contacto` varchar(50) NOT NULL,
-  `telefono` varchar(15) DEFAULT NULL,
-  `email` varchar(50) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_cliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- =====================================================
+-- TABLA: productos
+-- =====================================================
+CREATE TABLE productos (
+    id_producto INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    descripcion VARCHAR(100) NULL,
+    unidad_medida VARCHAR(30) NOT NULL,
+    stock INT DEFAULT 0,
+    stock_minimo INT DEFAULT 10,
+    tamaño_peso VARCHAR(50) DEFAULT '',
+    presentacion VARCHAR(50) DEFAULT '',
+    cantidad_unidad VARCHAR(50) DEFAULT '',
+    tipo_especifico VARCHAR(50) DEFAULT '',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
---
--- Dumping data for table `clientes`
---
+-- =====================================================
+-- TABLA: clientes
+-- =====================================================
+CREATE TABLE clientes (
+    id_cliente INT AUTO_INCREMENT PRIMARY KEY,
+    empresa VARCHAR(50) NOT NULL,
+    contacto VARCHAR(50) NOT NULL,
+    telefono VARCHAR(15) NULL,
+    email VARCHAR(50) NULL,
+    nit VARCHAR(20) NULL,
+    direccion VARCHAR(100) NULL,
+    ciudad VARCHAR(50) NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
-LOCK TABLES `clientes` WRITE;
-/*!40000 ALTER TABLE `clientes` DISABLE KEYS */;
-INSERT INTO `clientes` VALUES (1,'Caja Nacional de Salud','Juan Perez','76578953','juan@gmail.com','2025-10-13 02:31:25');
-/*!40000 ALTER TABLE `clientes` ENABLE KEYS */;
-UNLOCK TABLES;
+-- =====================================================
+-- TABLA: pedidos
+-- =====================================================
+CREATE TABLE pedidos (
+    id_pedido INT AUTO_INCREMENT PRIMARY KEY,
+    id_cliente INT NOT NULL,
+    empresa_cliente VARCHAR(50) NOT NULL,
+    persona_contacto VARCHAR(50) NOT NULL,
+    fecha_entrega DATE NOT NULL,
+    nota_remision VARCHAR(15) NULL,
+    lugar_entrega VARCHAR(100) NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'Pendiente',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_cliente) REFERENCES clientes(id_cliente)
+);
 
---
--- Table structure for table `detalle_pedidos`
---
+-- =====================================================
+-- TABLA: detalle_pedidos
+-- =====================================================
+CREATE TABLE detalle_pedidos (
+    id_detalle INT AUTO_INCREMENT PRIMARY KEY,
+    id_pedido INT NOT NULL,
+    id_producto INT NOT NULL,
+    cantidad INT NOT NULL,
+    FOREIGN KEY (id_pedido) REFERENCES pedidos(id_pedido),
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto)
+);
 
-DROP TABLE IF EXISTS `detalle_pedidos`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `detalle_pedidos` (
-  `id_detalle` int(11) NOT NULL AUTO_INCREMENT,
-  `id_pedido` int(11) NOT NULL,
-  `id_producto` int(11) NOT NULL,
-  `cantidad` int(11) NOT NULL,
-  PRIMARY KEY (`id_detalle`),
-  KEY `id_pedido` (`id_pedido`),
-  KEY `id_producto` (`id_producto`),
-  CONSTRAINT `detalle_pedidos_ibfk_1` FOREIGN KEY (`id_pedido`) REFERENCES `pedidos` (`id_pedido`),
-  CONSTRAINT `detalle_pedidos_ibfk_2` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- =====================================================
+-- TABLA: entradas
+-- =====================================================
+CREATE TABLE entradas (
+    id_entrada INT AUTO_INCREMENT PRIMARY KEY,
+    id_producto INT NOT NULL,
+    cantidad INT NOT NULL,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_responsable INT NOT NULL,
+    motivo VARCHAR(50) NOT NULL,
+    observaciones VARCHAR(100) NULL,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    FOREIGN KEY (usuario_responsable) REFERENCES usuarios(id_usuario)
+);
 
---
--- Dumping data for table `detalle_pedidos`
---
+-- =====================================================
+-- TABLA: salidas
+-- =====================================================
+CREATE TABLE salidas (
+    id_salida INT AUTO_INCREMENT PRIMARY KEY,
+    id_producto INT NOT NULL,
+    cantidad INT NOT NULL,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    usuario_responsable INT NOT NULL,
+    motivo VARCHAR(50) NOT NULL,
+    observaciones VARCHAR(100) NULL,
+    FOREIGN KEY (id_producto) REFERENCES productos(id_producto),
+    FOREIGN KEY (usuario_responsable) REFERENCES usuarios(id_usuario)
+);
 
-LOCK TABLES `detalle_pedidos` WRITE;
-/*!40000 ALTER TABLE `detalle_pedidos` DISABLE KEYS */;
-INSERT INTO `detalle_pedidos` VALUES (2,2,9,23),(3,3,9,100);
-/*!40000 ALTER TABLE `detalle_pedidos` ENABLE KEYS */;
-UNLOCK TABLES;
+-- =====================================================
+-- TABLA: logs (auditoría)
+-- =====================================================
+CREATE TABLE logs (
+    id_log INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    accion VARCHAR(100) NOT NULL,
+    modulo VARCHAR(30) NOT NULL,
+    detalles TEXT NULL,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES usuarios(id_usuario)
+);
 
---
--- Table structure for table `entradas`
---
+-- =====================================================
+-- TABLA: productos_quimicos
+-- =====================================================
+CREATE TABLE productos_quimicos (
+    id_quimico INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    stock INT DEFAULT 0,
+    stock_minimo INT DEFAULT 10,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
-DROP TABLE IF EXISTS `entradas`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `entradas` (
-  `id_entrada` int(11) NOT NULL AUTO_INCREMENT,
-  `id_producto` int(11) NOT NULL,
-  `cantidad` int(11) NOT NULL,
-  `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
-  `usuario_responsable` int(11) NOT NULL,
-  `motivo` varchar(50) NOT NULL,
-  `observaciones` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`id_entrada`),
-  KEY `id_producto` (`id_producto`),
-  KEY `usuario_responsable` (`usuario_responsable`),
-  CONSTRAINT `entradas_ibfk_1` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`),
-  CONSTRAINT `entradas_ibfk_2` FOREIGN KEY (`usuario_responsable`) REFERENCES `usuarios` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- =====================================================
+-- TABLA: envases
+-- =====================================================
+CREATE TABLE envases (
+    id_envase INT AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    stock INT DEFAULT 0,
+    stock_minimo INT DEFAULT 10,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
---
--- Dumping data for table `entradas`
---
+-- =====================================================
+-- ÍNDICES DE OPTIMIZACIÓN
+-- =====================================================
+CREATE INDEX idx_pedidos_remision ON pedidos(nota_remision);
+CREATE INDEX idx_pedidos_estado ON pedidos(estado);
+CREATE INDEX idx_pedidos_fecha_entrega ON pedidos(fecha_entrega);
+CREATE INDEX idx_clientes_nit ON clientes(nit);
+CREATE INDEX idx_clientes_empresa ON clientes(empresa);
+CREATE INDEX idx_productos_stock ON productos(stock);
+CREATE INDEX idx_quimicos_nombre ON productos_quimicos(nombre);
+CREATE INDEX idx_envases_nombre ON envases(nombre);
 
-LOCK TABLES `entradas` WRITE;
-/*!40000 ALTER TABLE `entradas` DISABLE KEYS */;
-INSERT INTO `entradas` VALUES (22,9,2,'2025-10-13 02:20:03',1,'Compra',''),(24,9,1,'2025-10-13 02:21:26',1,'Producción',''),(25,9,3,'2025-10-13 02:21:39',1,'Devolución','Devolvieron 3');
-/*!40000 ALTER TABLE `entradas` ENABLE KEYS */;
-UNLOCK TABLES;
+-- =====================================================
+-- DATOS INICIALES
+-- =====================================================
 
---
--- Table structure for table `logs`
---
+-- Usuarios
+INSERT INTO usuarios (nombre, correo, contrasena, rol) VALUES 
+('Administrador Principal', 'admin@albus.com', SHA2('admin123', 256), 'Administrador'),
+('Operario 1', 'operario1@albus.com', SHA2('operario123', 256), 'Operario'),
+('Operario 2', 'operario2@albus.com', SHA2('operario123', 256), 'Operario');
 
-DROP TABLE IF EXISTS `logs`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `logs` (
-  `id_log` int(11) NOT NULL AUTO_INCREMENT,
-  `id_usuario` int(11) NOT NULL,
-  `accion` varchar(100) NOT NULL,
-  `modulo` varchar(30) NOT NULL,
-  `detalles` text DEFAULT NULL,
-  `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id_log`),
-  KEY `id_usuario` (`id_usuario`),
-  CONSTRAINT `logs_ibfk_1` FOREIGN KEY (`id_usuario`) REFERENCES `usuarios` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
+-- Productos
+INSERT INTO productos (nombre, descripcion, unidad_medida, stock, stock_minimo, tamaño_peso, presentacion, cantidad_unidad, tipo_especifico) VALUES
+('Compresas', 'Compresas de gasa', 'Cajas', 100, 10, '5x5cm', 'Caja', '40 unidades', 'Venda'),
+('Compresas', 'Compresas de gasa', 'Cajas', 80, 8, '5x5cm', 'Caja', '40 unidades', 'Gasa'),
+('Vendas', 'Vendas de gasa', 'Bolsas', 50, 5, '5cm', 'Bolsa', '', 'Normal'),
+('Vendas', 'Vendas de gasa', 'Bolsas', 45, 5, '5cm', 'Bolsa', '', 'Policotton'),
+('Gasa', 'Gasa blanca', 'Bolsas', 75, 8, '100yds', 'Bolsa', '', 'Blanca'),
+('Algodón', 'Algodón entero', 'Paquetes', 30, 5, '100gr', 'Paquete', '', 'Entero'),
+('Barbijos quirúrgicos', 'Barbijos quirúrgicos', 'Cajas', 200, 20, '', 'Caja', '50 unidades', 'Quirúrgico'),
+('Algodón', 'Algodón entero', 'Paquetes', 60, 10, '5gr', 'Paquete', '', 'Entero'),
+('Tapa ojos', 'Tapa ojos blancos', 'Bolsas', 40, 5, '6.5x5.5cm', 'Bolsa', '', 'Blancos'),
+('Torundas de gasa', 'Torundas de gasa bolitas', 'Bolsas', 35, 5, '', 'Bolsa', '', 'Bolita');
 
---
--- Dumping data for table `logs`
---
+-- Productos químicos
+INSERT INTO productos_quimicos (nombre, stock, stock_minimo) VALUES
+('SODA CAUSTICA', 200, 50),
+('CARBONATO DE SODIO', 50, 20),
+('BLANQUEADOR OPTICO', 25, 10),
+('AGUA OXIGENADA', 130, 40),
+('ACIDO FORMICO', 75, 25),
+('SECUESTRANTE', 25, 10),
+('COAGULANTE', 50, 20),
+('INCASOF', 25, 10),
+('TANAZIM', 30, 15),
+('ALCALIFONO', 5, 2);
 
-LOCK TABLES `logs` WRITE;
-/*!40000 ALTER TABLE `logs` DISABLE KEYS */;
-INSERT INTO `logs` VALUES (10,1,'Eliminó producto y todos sus movimientos: Algodón','Productos',NULL,'2025-10-13 02:20:25'),(11,1,'Salida: Compresas - Cantidad: -200 - Motivo: Venta','Salidas','Salida: Compresas - Cantidad: -200 - Motivo: Venta','2025-10-13 02:25:20'),(12,1,'Salida: Compresas - Cantidad: -10 - Motivo: Venta','Salidas','Salida: Compresas - Cantidad: -10 - Motivo: Venta','2025-10-13 02:31:58');
-/*!40000 ALTER TABLE `logs` ENABLE KEYS */;
-UNLOCK TABLES;
+-- Envases
+INSERT INTO envases (nombre, stock, stock_minimo) VALUES
+('ETIQUETAS RECTANGULARES 1000 GRS', 4012, 1000),
+('ETIQUETAS RECTANGULARES 800 GRS', 24000, 5000),
+('ETIQUETAS RECTANGULARES 500 GRS', 9000, 2000),
+('ETIQUETAS RECTANGULARES 400 GRS', 78000, 15000),
+('ETIQUETAS RECTANGULARES 200 GRS', 10775, 2500),
+('ETIQUETAS RECTANGULARES 100 GRS', 16500, 4000),
+('ETIQUETAS REDONDAS GRANDES', 96000, 20000),
+('ETIQUETAS REDONDAS MEDIANAS', 29000, 6000),
+('ETIQUETAS LAMINADO 10 CM', 1000, 200),
+('ETIQUETAS LAMINADO 15 CM', 627, 150),
+('ETIQUETAS LAMINADO 20 CM', 503, 100),
+('BOLSAS DISCO 250 GRS', 3672, 800),
+('BOLSAS DISCO 100 GRS', 7800, 1500),
+('BOLSAS DISCO 50 GRS', 20600, 4000),
+('BOLSAS 50 GRS', 13700, 3000),
+('BOLSA 10 GRS', 2813, 500),
+('BOLSAS DE ZIGZAG', 7900, 1500),
+('BOLSAS DE BOLITAS', 3000, 600),
+('BOLSAS DE COMPRESAS 5 X 5', 25627, 5000),
+('CAJAS DE COMPRESAS 5 X 5', 10, 5),
+('BOLSAS DE COMPRESAS 7,5 X 7,5', 3600, 800),
+('CAJAS DE COMPRESA 7,5 X 7,5', 541, 100),
+('BOLSAS DE COMPRESA 10 X 10', 78800, 15000),
+('CAJAS DE COMPRESA 10 X 10', 240, 50),
+('CAJAS DE BARBIJO', 2244, 500),
+('CAJAS DE ESPONJAS DE 2 X 2', 100, 20),
+('CAJAS DE ESPONJAS DE 4 X 4', 450, 100),
+('VENDAS DE 5 CM', 86894, 15000),
+('VENDAS DE 7,5 CM', 76333, 15000),
+('VENDAS DE 10 CM', 66825, 12000),
+('VENDAS DE 12,5 CM', 29575, 6000),
+('VENDAS DE 15 CM', 57108, 10000),
+('VENDAS DE 20 CM', 55340, 10000),
+('ETIQUETAS 150 YDS', 7156, 1500),
+('ETIQUETAS DE 2 YDS', 3800, 800),
+('ETIQUETAS 4,50 MTS', 487, 100),
+('BOBINA DE 65 CM', 66, 20),
+('BOBINA DE 60 CM', 74, 20);
 
---
--- Table structure for table `pedidos`
---
-
-DROP TABLE IF EXISTS `pedidos`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `pedidos` (
-  `id_pedido` int(11) NOT NULL AUTO_INCREMENT,
-  `empresa_cliente` varchar(50) NOT NULL,
-  `persona_contacto` varchar(50) NOT NULL,
-  `fecha_entrega` date NOT NULL,
-  `estado` varchar(20) NOT NULL DEFAULT 'Pendiente',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id_pedido`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `pedidos`
---
-
-LOCK TABLES `pedidos` WRITE;
-/*!40000 ALTER TABLE `pedidos` DISABLE KEYS */;
-INSERT INTO `pedidos` VALUES (2,'Caja Nacional de Salud','Juan Perez','2025-10-22','Cancelado','2025-10-13 02:49:49','2025-10-13 02:58:09'),(3,'Caja Nacional de Salud','Juan Perez','2025-10-24','Pendiente','2025-10-13 02:57:55','2025-10-13 02:57:55');
-/*!40000 ALTER TABLE `pedidos` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `productos`
---
-
-DROP TABLE IF EXISTS `productos`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `productos` (
-  `id_producto` int(11) NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(50) NOT NULL,
-  `descripcion` varchar(100) DEFAULT NULL,
-  `categoria` varchar(30) NOT NULL,
-  `unidad_medida` varchar(20) NOT NULL,
-  `stock` int(11) DEFAULT 0,
-  `stock_minimo` int(11) DEFAULT 10,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `ancho` decimal(10,2) DEFAULT 0.00,
-  `largo` decimal(10,2) DEFAULT 0.00,
-  `tipo_especifico` varchar(50) DEFAULT '',
-  `presentacion` varchar(50) DEFAULT '',
-  `cantidad_unidad` decimal(10,2) DEFAULT 0.00,
-  PRIMARY KEY (`id_producto`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `productos`
---
-
-LOCK TABLES `productos` WRITE;
-/*!40000 ALTER TABLE `productos` DISABLE KEYS */;
-INSERT INTO `productos` VALUES (9,'Compresas','','Material de Curación','unidad',96,250,'2025-10-13 01:49:11','2025-10-13 02:31:58',5.00,5.00,'0','',0.00);
-/*!40000 ALTER TABLE `productos` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `salidas`
---
-
-DROP TABLE IF EXISTS `salidas`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `salidas` (
-  `id_salida` int(11) NOT NULL AUTO_INCREMENT,
-  `id_producto` int(11) NOT NULL,
-  `cantidad` int(11) NOT NULL,
-  `fecha` timestamp NOT NULL DEFAULT current_timestamp(),
-  `usuario_responsable` int(11) NOT NULL,
-  `motivo` varchar(50) NOT NULL,
-  `observaciones` varchar(100) DEFAULT NULL,
-  PRIMARY KEY (`id_salida`),
-  KEY `id_producto` (`id_producto`),
-  KEY `usuario_responsable` (`usuario_responsable`),
-  CONSTRAINT `salidas_ibfk_1` FOREIGN KEY (`id_producto`) REFERENCES `productos` (`id_producto`),
-  CONSTRAINT `salidas_ibfk_2` FOREIGN KEY (`usuario_responsable`) REFERENCES `usuarios` (`id_usuario`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `salidas`
---
-
-LOCK TABLES `salidas` WRITE;
-/*!40000 ALTER TABLE `salidas` DISABLE KEYS */;
-INSERT INTO `salidas` VALUES (4,9,200,'2025-10-13 02:25:20',1,'Venta',''),(5,9,10,'2025-10-13 02:31:58',1,'Venta','Venta a CNS');
-/*!40000 ALTER TABLE `salidas` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `usuarios`
---
-
-DROP TABLE IF EXISTS `usuarios`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `usuarios` (
-  `id_usuario` int(11) NOT NULL AUTO_INCREMENT,
-  `nombre` varchar(50) NOT NULL,
-  `correo` varchar(50) NOT NULL,
-  `contrasena` varchar(64) NOT NULL,
-  `rol` varchar(20) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id_usuario`),
-  UNIQUE KEY `correo` (`correo`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `usuarios`
---
-
-LOCK TABLES `usuarios` WRITE;
-/*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'Administrador Principal','admin@albus.com','240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9','Administrador','2025-10-13 02:19:37','2025-10-13 02:19:37'),(2,'Operario 1','operario1@albus.com','ea66d0295003394ff7f847590fe43af491ded28bb3837d543d55dfa130c9b2f3','Operario','2025-10-13 02:19:37','2025-10-13 02:19:37'),(3,'Operario 2','operario2@albus.com','ea66d0295003394ff7f847590fe43af491ded28bb3837d543d55dfa130c9b2f3','Operario','2025-10-13 02:19:37','2025-10-13 02:19:37');
-/*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
-UNLOCK TABLES;
-/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
-
-/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
-/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
-/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
-/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
-
--- Dump completed on 2025-10-13 19:03:45
+-- =====================================================
+-- FIN DEL SCRIPT
+-- =====================================================

@@ -21,8 +21,11 @@ $sql = "SELECT s.*, p.nombre as producto_nombre, u.nombre as usuario_nombre
         LIMIT 50";
 $result = $conn->query($sql);
 
-// Consultar productos para el select
-$sql_productos = "SELECT id_producto, nombre, stock, unidad_medida FROM productos ORDER BY nombre";
+// Consultar productos para el select - INCLUYENDO ESPECIFICACIONES
+$sql_productos = "SELECT id_producto, nombre, descripcion, stock, unidad_medida, 
+                         tamaño_peso, presentacion, cantidad_unidad, tipo_especifico 
+                  FROM productos 
+                  ORDER BY nombre, tipo_especifico, tamaño_peso";
 $productos_result = $conn->query($sql_productos);
 ?>
 
@@ -60,7 +63,7 @@ $productos_result = $conn->query($sql_productos);
             <i class="bi bi-dash-circle"></i> Nueva Salida de Productos
         </div>
         <div class="card-body">
-            <form action="funcionalidad_salidas/registrar_salida.php" method="POST">
+            <form action="funcionalidad_salidas/registrar_salida.php" method="POST" id="formSalida">
                 <div class="row">
                     <div class="col-md-4">
                         <div class="mb-3">
@@ -68,11 +71,24 @@ $productos_result = $conn->query($sql_productos);
                             <select class="form-select" name="id_producto" required id="selectProducto">
                                 <option value="">Seleccionar producto...</option>
                                 <?php if ($productos_result && $productos_result->num_rows > 0): ?>
-                                    <?php while ($producto = $productos_result->fetch_assoc()): ?>
+                                    <?php while ($producto = $productos_result->fetch_assoc()): 
+                                        // Construir descripción detallada
+                                        $especificaciones = [];
+                                        if ($producto['tamaño_peso']) $especificaciones[] = $producto['tamaño_peso'];
+                                        if ($producto['cantidad_unidad']) $especificaciones[] = $producto['cantidad_unidad'];
+                                        if ($producto['tipo_especifico']) $especificaciones[] = $producto['tipo_especifico'];
+                                        if ($producto['presentacion']) $especificaciones[] = $producto['presentacion'];
+                                        
+                                        $descripcion_detallada = !empty($especificaciones) ? ' - ' . implode(' • ', $especificaciones) : '';
+                                        if ($producto['descripcion']) {
+                                            $descripcion_detallada = ' - ' . $producto['descripcion'] . $descripcion_detallada;
+                                        }
+                                    ?>
                                         <option value="<?php echo $producto['id_producto']; ?>" 
                                                 data-stock="<?php echo $producto['stock']; ?>"
-                                                data-unidad="<?php echo $producto['unidad_medida']; ?>">
-                                            <?php echo htmlspecialchars($producto['nombre']); ?> 
+                                                data-unidad="<?php echo $producto['unidad_medida']; ?>"
+                                                data-especificaciones="<?php echo htmlspecialchars(implode(' • ', $especificaciones)); ?>">
+                                            <?php echo htmlspecialchars($producto['nombre'] . $descripcion_detallada); ?> 
                                             (Stock: <?php echo $producto['stock']; ?>)
                                         </option>
                                     <?php endwhile; ?>
@@ -80,6 +96,7 @@ $productos_result = $conn->query($sql_productos);
                                     <option value="" disabled>No hay productos registrados</option>
                                 <?php endif; ?>
                             </select>
+                            <small class="text-muted" id="infoEspecificaciones"></small>
                         </div>
                     </div>
                     <div class="col-md-2">
@@ -95,6 +112,8 @@ $productos_result = $conn->query($sql_productos);
                                 <option value="Venta">Venta/Despacho</option>
                                 <option value="Donación">Donación</option>
                                 <option value="Ajuste">Ajuste de inventario</option>
+                                <option value="Uso interno">Uso interno</option>
+                                <option value="Merma">Merma/Pérdida</option>
                             </select>
                         </div>
                     </div>
@@ -166,52 +185,107 @@ $productos_result = $conn->query($sql_productos);
 </div>
 
 <script>
-// Mostrar información del stock cuando seleccionan producto
-document.getElementById('selectProducto').addEventListener('change', function() {
-    const selectedOption = this.options[this.selectedIndex];
-    const stockActual = selectedOption.getAttribute('data-stock');
-    const unidad = selectedOption.getAttribute('data-unidad');
+document.addEventListener('DOMContentLoaded', function() {
+    const selectProducto = document.getElementById('selectProducto');
+    const inputCantidad = document.getElementById('inputCantidad');
     const infoStock = document.getElementById('infoStock');
+    const infoEspecificaciones = document.getElementById('infoEspecificaciones');
+    const formSalida = document.getElementById('formSalida');
     
-    if (stockActual !== null && selectedOption.value !== "") {
-        // Mapeo de unidades amigables
-        const unidades = {
-            'unidad': 'unidades',
-            'caja': 'cajas', 
-            'pack': 'packs',
-            'rollo': 'rollos',
-            'par': 'pares',
-            'gramo': 'gramos',
-            'kilogramo': 'kilogramos',
-            'metro': 'metros',
-            'centimetro': 'centímetros'
-        };
+    // Mostrar información del stock y especificaciones cuando seleccionan producto
+    selectProducto.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        const stockActual = parseInt(selectedOption.getAttribute('data-stock'));
+        const unidad = selectedOption.getAttribute('data-unidad');
+        const especificaciones = selectedOption.getAttribute('data-especificaciones');
         
-        const unidadDisplay = unidades[unidad] || unidad;
-        infoStock.textContent = `Stock actual: ${stockActual} ${unidadDisplay}`;
-        
-        // Cambiar color según stock
-        if (stockActual < 10) {
-            infoStock.className = 'text-danger ms-3 fw-bold';
-        } else if (stockActual < 20) {
-            infoStock.className = 'text-warning ms-3 fw-bold';
+        if (stockActual !== null && selectedOption.value !== "") {
+            // Mapeo de unidades amigables
+            const unidades = {
+                'unidad': 'unidades',
+                'caja': 'cajas', 
+                'pack': 'packs',
+                'rollo': 'rollos',
+                'par': 'pares',
+                'gramo': 'gramos',
+                'kilogramo': 'kilogramos',
+                'metro': 'metros',
+                'centimetro': 'centímetros'
+            };
+            
+            const unidadDisplay = unidades[unidad] || unidad;
+            infoStock.textContent = `Stock actual: ${stockActual} ${unidadDisplay}`;
+            
+            // Cambiar color según stock
+            if (stockActual === 0) {
+                infoStock.className = 'text-danger ms-3 fw-bold';
+                infoStock.textContent += ' ⚠️ SIN STOCK';
+            } else if (stockActual < 10) {
+                infoStock.className = 'text-danger ms-3 fw-bold';
+                infoStock.textContent += ' ⚠️ STOCK BAJO';
+            } else if (stockActual < 20) {
+                infoStock.className = 'text-warning ms-3 fw-bold';
+            } else {
+                infoStock.className = 'text-success ms-3 fw-bold';
+            }
+            
+            // Mostrar especificaciones
+            if (especificaciones && especificaciones.trim() !== '') {
+                infoEspecificaciones.textContent = especificaciones;
+                infoEspecificaciones.className = 'text-info fw-bold';
+            } else {
+                infoEspecificaciones.textContent = 'Sin especificaciones adicionales';
+                infoEspecificaciones.className = 'text-muted';
+            }
+            
+            // Actualizar cantidad máxima
+            inputCantidad.setAttribute('max', stockActual);
+            
         } else {
-            infoStock.className = 'text-success ms-3 fw-bold';
+            infoStock.textContent = '';
+            infoEspecificaciones.textContent = '';
+            inputCantidad.removeAttribute('max');
         }
-    } else {
-        infoStock.textContent = '';
-    }
-});
-
-// Validar que no se retire más del stock disponible
-document.querySelector('form').addEventListener('submit', function(e) {
-    const selectedOption = document.getElementById('selectProducto').options[document.getElementById('selectProducto').selectedIndex];
-    const stockActual = parseInt(selectedOption.getAttribute('data-stock'));
-    const cantidad = parseInt(document.getElementById('inputCantidad').value);
+    });
     
-    if (cantidad > stockActual) {
-        e.preventDefault();
-        alert(`❌ Error: No hay suficiente stock.\nStock disponible: ${stockActual}\nCantidad a retirar: ${cantidad}`);
+    // Validar cantidad en tiempo real
+    inputCantidad.addEventListener('input', function() {
+        const selectedOption = selectProducto.options[selectProducto.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            const stockActual = parseInt(selectedOption.getAttribute('data-stock'));
+            const cantidad = parseInt(this.value);
+            
+            if (cantidad > stockActual) {
+                this.classList.add('is-invalid');
+                infoStock.textContent += ` ❌ Supera stock (${stockActual})`;
+                infoStock.className = 'text-danger ms-3 fw-bold';
+            } else {
+                this.classList.remove('is-invalid');
+                // Restaurar color original del stock
+                selectProducto.dispatchEvent(new Event('change'));
+            }
+        }
+    });
+    
+    // Validar que no se retire más del stock disponible al enviar
+    formSalida.addEventListener('submit', function(e) {
+        const selectedOption = selectProducto.options[selectProducto.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            const stockActual = parseInt(selectedOption.getAttribute('data-stock'));
+            const cantidad = parseInt(inputCantidad.value);
+            
+            if (cantidad > stockActual) {
+                e.preventDefault();
+                alert(`❌ Error: No hay suficiente stock.\n\nStock disponible: ${stockActual}\nCantidad a retirar: ${cantidad}\n\nPor favor, ajuste la cantidad.`);
+                inputCantidad.focus();
+                inputCantidad.select();
+            }
+        }
+    });
+    
+    // Mostrar información inicial si hay un producto seleccionado
+    if (selectProducto.value) {
+        selectProducto.dispatchEvent(new Event('change'));
     }
 });
 </script>

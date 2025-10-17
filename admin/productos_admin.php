@@ -13,17 +13,13 @@ $success = isset($_GET['success']) ? $_GET['success'] : null;
 $error = isset($_GET['error']) ? $_GET['error'] : null;
 
 // Consultar productos
-$sql = "SELECT * FROM productos ORDER BY categoria, nombre ASC";
+$sql = "SELECT * FROM productos ORDER BY nombre ASC";
 $result = $conn->query($sql);
-
-// Obtener categorías únicas para filtros
-$sql_categorias = "SELECT DISTINCT categoria FROM productos ORDER BY categoria";
-$categorias = $conn->query($sql_categorias);
 ?>
 
 <div class="container-fluid">
     <h2><i class="bi bi-box"></i> Gestión de Productos Médicos</h2>
-    <p class="text-muted">Administra el inventario de productos médicos con sus dimensiones y especificaciones.</p>
+    <p class="text-muted">Administra el inventario de productos médicos.</p>
 
     <!-- Mostrar mensajes -->
     <?php if ($success): ?>
@@ -130,128 +126,126 @@ $categorias = $conn->query($sql_categorias);
     </div>
 
     <!-- Tabla de Productos -->
-<div class="card shadow-sm">
-    <div class="card-header bg-dark text-white">
-        <i class="bi bi-list-ul"></i> Inventario de Productos Médicos
-    </div>
-    <div class="card-body">
-        <?php if ($result && $result->num_rows > 0): ?>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle">
-                    <thead class="table-secondary">
-                        <tr>
-                            <th>Producto y Especificaciones</th>
-                            <th>Categoría</th>
-                            <th>Stock</th>
-                            <th>Mínimo</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php while ($row = $result->fetch_assoc()): 
-                            $clase_stock = '';
-                            $texto_estado = '';
-
-                            if ($row['stock'] == 0) {
-                                $clase_stock = 'bg-danger text-white';
-                                $texto_estado = 'Sin Stock';
-                            } elseif ($row['stock'] <= $row['stock_minimo']) {
-                                $clase_stock = 'bg-warning text-dark';
-                                $texto_estado = 'Stock Bajo';
-                            } else {
-                                $clase_stock = 'bg-success text-white';
-                                $texto_estado = 'Óptimo';
-                            }
-                        ?>
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <i class="bi bi-list-ul"></i> Inventario de Productos Médicos
+        </div>
+        <div class="card-body">
+            <?php if ($result && $result->num_rows > 0): ?>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-secondary">
                             <tr>
-                                <td>
-                                    <div>
+                                <th>Producto</th>
+                                <th>Especificaciones</th>
+                                <th>Presentación</th>
+                                <th>Unidad</th>
+                                <th>Stock</th>
+                                <th>Mínimo</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($row = $result->fetch_assoc()): 
+                                $clase_stock = '';
+                                $texto_estado = '';
+
+                                if ($row['stock'] == 0) {
+                                    $clase_stock = 'bg-danger text-white';
+                                    $texto_estado = 'Sin Stock';
+                                } elseif ($row['stock'] <= $row['stock_minimo']) {
+                                    $clase_stock = 'bg-warning text-dark';
+                                    $texto_estado = 'Stock Bajo';
+                                } else {
+                                    $clase_stock = 'bg-success text-white';
+                                    $texto_estado = 'Óptimo';
+                                }
+                            ?>
+                                <tr>
+                                    <td>
                                         <strong><?php echo htmlspecialchars($row['nombre']); ?></strong>
-                                        <?php 
-                                        // Mostrar dimensiones, cantidad y especificaciones
-                                        $especificaciones = [];
-                                        
-                                        if ($row['ancho'] > 0 && $row['largo'] > 0) {
-                                            $especificaciones[] = $row['ancho'] . ' cm x ' . $row['largo'] . ' cm';
-                                        } elseif ($row['ancho'] > 0) {
-                                            $especificaciones[] = $row['ancho'] . ' cm';
-                                        }
-                                        
-                                        if ($row['cantidad_unidad'] > 0) {
-                                            $especificaciones[] = $row['cantidad_unidad'];
-                                        }
-                                        
-                                        if ($row['tipo_especifico']) {
-                                            $especificaciones[] = $row['tipo_especifico'];
-                                        }
-                                        
-                                        if (!empty($especificaciones)) {
-                                            echo '<br><small class="text-primary"><strong>' . implode(' • ', $especificaciones) . '</strong></small>';
-                                        }
-                                        ?>
-                                        
                                         <?php if ($row['descripcion']): ?>
                                             <br><small class="text-muted"><?php echo htmlspecialchars($row['descripcion']); ?></small>
                                         <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <?php 
+                                        $especificaciones = [];
+                                        if ($row['tamaño_peso']) {
+                                            $especificaciones[] = '<strong>' . htmlspecialchars($row['tamaño_peso']) . '</strong>';
+                                        }
+                                        if ($row['cantidad_unidad']) {
+                                            $especificaciones[] = htmlspecialchars($row['cantidad_unidad']);
+                                        }
+                                        if ($row['tipo_especifico']) {
+                                            $especificaciones[] = htmlspecialchars($row['tipo_especifico']);
+                                        }
                                         
+                                        if (!empty($especificaciones)) {
+                                            echo implode(' • ', $especificaciones);
+                                        } else {
+                                            echo '<small class="text-muted">- Sin especificaciones -</small>';
+                                        }
+                                        ?>
+                                    </td>
+                                    <td>
                                         <?php if ($row['presentacion']): ?>
-                                            <br><small class="text-info">📦 <?php echo htmlspecialchars($row['presentacion']); ?></small>
+                                            <span class="badge bg-info"><?php echo htmlspecialchars($row['presentacion']); ?></span>
+                                        <?php else: ?>
+                                            <small class="text-muted">-</small>
                                         <?php endif; ?>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-info"><?php echo htmlspecialchars($row['categoria']); ?></span>
-                                </td>
-                                <td>
-                                    <span class="badge <?php echo $clase_stock; ?> fs-6">
-                                        <?php echo $row['stock']; ?>
-                                    </span>
-                                </td>
-                                <td><?php echo $row['stock_minimo']; ?></td>
-                                <td>
-                                    <span class="badge <?php echo $clase_stock; ?>">
-                                        <?php echo $texto_estado; ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm btn-warning" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editarProductoModal"
-                                            data-id="<?php echo $row['id_producto']; ?>"
-                                            data-nombre="<?php echo htmlspecialchars($row['nombre']); ?>"
-                                            data-descripcion="<?php echo htmlspecialchars($row['descripcion']); ?>"
-                                            data-categoria="<?php echo htmlspecialchars($row['categoria']); ?>"
-                                            data-stock="<?php echo $row['stock']; ?>"
-                                            data-stockmin="<?php echo $row['stock_minimo']; ?>"
-                                            data-ancho="<?php echo $row['ancho']; ?>"
-                                            data-largo="<?php echo $row['largo']; ?>"
-                                            data-tipo="<?php echo htmlspecialchars($row['tipo_especifico']); ?>"
-                                            data-presentacion="<?php echo htmlspecialchars($row['presentacion']); ?>"
-                                            data-cantidad="<?php echo $row['cantidad_unidad']; ?>">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </button>
-                                    <a href="funcionalidad_productos/eliminar_producto.php?id=<?php echo $row['id_producto']; ?>" 
-                                       class="btn btn-sm btn-danger" 
-                                       onclick="return confirm('⚠️ ¿ESTÁ SEGURO que desea eliminar este producto?\n\nSe eliminarán TODOS los movimientos relacionados (entradas, salidas, pedidos).\n\nEsta acción NO se puede deshacer.')">
-                                        <i class="bi bi-trash"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endwhile; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php else: ?>
-            <div class="alert alert-info text-center">
-                <i class="bi bi-info-circle"></i> No hay productos médicos registrados en el sistema.
-                <br><small>Haz clic en "Nuevo Producto Médico" para agregar el primero.</small>
-            </div>
-        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary"><?php echo htmlspecialchars($row['unidad_medida']); ?></span>
+                                    </td>
+                                    <td>
+                                        <span class="badge <?php echo $clase_stock; ?> fs-6">
+                                            <?php echo $row['stock']; ?>
+                                        </span>
+                                    </td>
+                                    <td><?php echo $row['stock_minimo']; ?></td>
+                                    <td>
+                                        <span class="badge <?php echo $clase_stock; ?>">
+                                            <?php echo $texto_estado; ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-warning" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#editarProductoModal"
+                                                data-id="<?php echo $row['id_producto']; ?>"
+                                                data-nombre="<?php echo htmlspecialchars($row['nombre']); ?>"
+                                                data-descripcion="<?php echo htmlspecialchars($row['descripcion']); ?>"
+                                                data-unidad="<?php echo htmlspecialchars($row['unidad_medida']); ?>"
+                                                data-stock="<?php echo $row['stock']; ?>"
+                                                data-stockmin="<?php echo $row['stock_minimo']; ?>"
+                                                data-presentacion="<?php echo htmlspecialchars($row['presentacion']); ?>"
+                                                data-tamaño="<?php echo htmlspecialchars($row['tamaño_peso']); ?>"
+                                                data-cantidad="<?php echo htmlspecialchars($row['cantidad_unidad']); ?>"
+                                                data-tipo="<?php echo htmlspecialchars($row['tipo_especifico']); ?>">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </button>
+                                        <a href="funcionalidad_productos/eliminar_producto.php?id=<?php echo $row['id_producto']; ?>" 
+                                           class="btn btn-sm btn-danger" 
+                                           onclick="return confirm('⚠️ ¿ESTÁ SEGURO que desea eliminar este producto?\n\nSe eliminarán TODOS los movimientos relacionados (entradas, salidas, pedidos).\n\nEsta acción NO se puede deshacer.')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php else: ?>
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> No hay productos médicos registrados en el sistema.
+                    <br><small>Haz clic en "Nuevo Producto Médico" para agregar el primero.</small>
+                </div>
+            <?php endif; ?>
+        </div>
     </div>
 </div>
-</div>
-
 
 <!-- MODAL NUEVO PRODUCTO MÉDICO -->
 <div class="modal fade" id="nuevoProductoModal" tabindex="-1" aria-labelledby="nuevoProductoLabel" aria-hidden="true">
@@ -275,112 +269,74 @@ $categorias = $conn->query($sql_categorias);
                   <option value="Algodón">Algodón</option>
                   <option value="Apósitos">Apósitos</option>
                   <option value="Algodón laminado">Algodón laminado</option>
-                  <option value="Torundas">Torundas</option>
-                  <option value="Barbijos">Barbijos</option>
+                  <option value="Torundas de gasa">Torundas de gasa</option>
+                  <option value="Torundas de algodón">Torundas de algodón</option>
+                  <option value="Barbijos quirurgicos">Barbijos quirurgicos</option>
                   <option value="Apósito ocular">Apósito ocular</option>
                   <option value="Tapa ojos">Tapa ojos</option>
+                  <option value="Tapa oídos">Tapa oídos</option>
+                  <option value="Algodón en disco">Algodón en disco</option>
+                  <option value="Compresas costuradas">Compresas costuradas</option>
+                  <option value="Gasa cortada">Gasa cortada</option>
                   <option value="otros">Otros (especificar)</option>
                 </select>
                 <input type="text" class="form-control mt-2 d-none" name="nombre_personalizado" id="nombrePersonalizado" 
                        placeholder="Especificar nombre del producto" maxlength="50">
               </div>
             </div>
-            <div class="col-md-6">
+            <!--<div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Categoría:</label>
-                <select class="form-select" name="categoria" required>
-                  <option value="Material de Curación">Material de Curación</option>
-                  <option value="Vendajes">Vendajes</option>
-                  <option value="Gasas y Apósitos">Gasas y Apósitos</option>
-                  <option value="Algodón y Torundas">Algodón y Torundas</option>
-                  <option value="Protección Ocular">Protección Ocular</option>
-                  <option value="Protección Personal">Protección Personal</option>
+                <label class="form-label">Unidad de Medida:</label>
+                <select class="form-select" name="unidad_medida" required>
+                  <option value="">Seleccionar...</option>
+                  <option value="Unidades">Unidades</option>
+                  <option value="Cajas">Cajas</option>
+                  <option value="Bolsas">Bolsas</option>
+                  <option value="Paquetes">Paquetes</option>
+                  <option value="Rollos">Rollos</option>
+                  <option value="Pares">Pares</option>
                 </select>
-              </div>
-            </div>
+              </div> 
+            </div> -->
           </div>
           
           <div class="mb-3">
             <label class="form-label">Descripción:</label>
             <textarea class="form-control" name="descripcion" rows="2" maxlength="100" 
-                      placeholder="Características adicionales del producto (ej: con hilo radiopaco, sin hilos, blanca, etc.)"></textarea>
+                      placeholder="Características adicionales del producto"></textarea>
           </div>
 
-          <!-- SECCIÓN DE DIMENSIONES Y ESPECIFICACIONES -->
-          <div class="card mb-3">
-            <div class="card-header bg-light">
-              <h6 class="mb-0"><i class="bi bi-rulers"></i> Especificaciones del Producto</h6>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <label class="form-label">Ancho:</label>
-                    <div class="input-group">
-                      <input type="number" class="form-control" name="ancho" step="0.1" min="0" placeholder="0" value="0">
-                      <span class="input-group-text">cm</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <label class="form-label">Largo:</label>
-                    <div class="input-group">
-                      <input type="number" class="form-control" name="largo" step="0.1" min="0" placeholder="0" value="0">
-                      <span class="input-group-text">cm</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <label class="form-label">Cantidad/Peso:</label>
-                    <input type="number" class="form-control" name="cantidad_unidad" step="1" min="0" value="0" 
-                           placeholder="Ej: 100, 200, 500">
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <label class="form-label">Unidad de Medida:</label>
-                    <select class="form-select" name="unidad_medida" required>
-                      <option value="">Seleccionar...</option>
-                      <option value="unidad">Unidades</option>
-                      <option value="caja">Cajas</option>
-                      <option value="pack">Packs</option>
-                      <option value="rollo">Rollos</option>
-                      <option value="par">Pares</option>
-                      <option value="gramo">Gramos (g)</option>
-                      <option value="kilogramo">Kilogramos (kg)</option>
-                      <option value="metro">Metros (m)</option>
-                      <option value="centimetro">Centímetros (cm)</option>
-                    </select>
-                  </div>
-                </div>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Tamaño/Peso:</label>
+                <input type="text" class="form-control" name="tamaño_peso" maxlength="50" 
+                       placeholder="Ej: 5x5cm, 100gr, 100yds, 22.5cm x 100yds">
+                <small class="text-muted">Dimensiones o peso del producto</small>
               </div>
-              
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Tipo Específico:</label>
-                    <input type="text" class="form-control" name="tipo_especifico" maxlength="50" 
-                           placeholder="Ej: Blanca, Hilo radiopaco, Con hilo, Sin hilo">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Presentación:</label>
-                    <input type="text" class="form-control" name="presentacion" maxlength="50" 
-                           placeholder="Ej: En zigzag, En bolitas, Individual">
-                  </div>
-                </div>
-              </div>
-              
-              <small class="text-muted">
-                <strong>Ejemplos de uso:</strong><br>
-                • <strong>Algodón:</strong> Cantidad/Peso: 100 + Unidad: Gramos → Resultado: 100 g<br>
-                • <strong>Vendas:</strong> Ancho: 10 + Unidad: Rollos → Resultado: 10 cm (rollos)<br>
-                • <strong>Compresas:</strong> Ancho: 10 + Largo: 10 + Unidad: Unidades → Resultado: 10x10 cm
-              </small>
             </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Cantidad por Unidad:</label>
+                <input type="text" class="form-control" name="cantidad_unidad" maxlength="50" 
+                       placeholder="Ej: 40 unidades, 50 unidades, 650 unidades">
+                <small class="text-muted">Contenido de cada unidad</small>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Presentación:</label>
+                <input type="text" class="form-control" name="presentacion" maxlength="50" 
+                       placeholder="Ej: Caja, Bolsa, Paquete">
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Tipo Específico:</label>
+            <input type="text" class="form-control" name="tipo_especifico" maxlength="50" 
+                   placeholder="Ej: Venda, Gasa, Normal, Policotton, Blanca, 1 hrp, 2 hrp, Entero, Laminado">
+            <small class="text-muted">Variante o tipo específico del producto</small>
           </div>
           
           <div class="row">
@@ -398,6 +354,16 @@ $categorias = $conn->query($sql_categorias);
                 <small class="text-muted">Alerta cuando el stock sea menor</small>
               </div>
             </div>
+          </div>
+
+          <div class="alert alert-info">
+            <small>
+              <strong>📝 Ejemplos según tu inventario:</strong><br>
+              • <strong>Compresas:</strong> Tamaño: 5x5cm | Cantidad: 40 unidades | Presentación: Caja | Tipo: Venda<br>
+              • <strong>Vendas:</strong> Tamaño: 5cm | Presentación: Bolsa | Tipo: Normal<br>
+              • <strong>Algodón:</strong> Tamaño: 100gr | Presentación: Paquete | Tipo: Entero<br>
+              • <strong>Compresas:</strong> Tamaño: 10x10cm | Cantidad: 650 unidades | Presentación: Bolsa | Tipo: Blancas
+            </small>
           </div>
         </div>
         <div class="modal-footer">
@@ -433,14 +399,14 @@ $categorias = $conn->query($sql_categorias);
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Categoría:</label>
-                <select class="form-select" name="categoria" id="edit_categoria" required>
-                  <option value="Material de Curación">Material de Curación</option>
-                  <option value="Vendajes">Vendajes</option>
-                  <option value="Gasas y Apósitos">Gasas y Apósitos</option>
-                  <option value="Algodón y Torundas">Algodón y Torundas</option>
-                  <option value="Protección Ocular">Protección Ocular</option>
-                  <option value="Protección Personal">Protección Personal</option>
+                <label class="form-label">Unidad de Medida:</label>
+                <select class="form-select" name="unidad_medida" id="edit_unidad" required>
+                  <option value="Unidades">Unidades</option>
+                  <option value="Cajas">Cajas</option>
+                  <option value="Bolsas">Bolsas</option>
+                  <option value="Paquetes">Paquetes</option>
+                  <option value="Rollos">Rollos</option>
+                  <option value="Pares">Pares</option>
                 </select>
               </div>
             </div>
@@ -451,70 +417,30 @@ $categorias = $conn->query($sql_categorias);
             <textarea class="form-control" name="descripcion" id="edit_descripcion" rows="2" maxlength="100"></textarea>
           </div>
 
-          <!-- SECCIÓN DE DIMENSIONES Y ESPECIFICACIONES -->
-          <div class="card mb-3">
-            <div class="card-header bg-light">
-              <h6 class="mb-0"><i class="bi bi-rulers"></i> Especificaciones del Producto</h6>
-            </div>
-            <div class="card-body">
-              <div class="row">
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <label class="form-label">Ancho:</label>
-                    <div class="input-group">
-                      <input type="number" class="form-control" name="ancho" id="edit_ancho" step="0.1" min="0" value="0">
-                      <span class="input-group-text">cm</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <label class="form-label">Largo:</label>
-                    <div class="input-group">
-                      <input type="number" class="form-control" name="largo" id="edit_largo" step="0.1" min="0" value="0">
-                      <span class="input-group-text">cm</span>
-                    </div>
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <label class="form-label">Cantidad/Peso:</label>
-                    <input type="number" class="form-control" name="cantidad_unidad" id="edit_cantidad" step="1" min="0" value="0">
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="mb-3">
-                    <label class="form-label">Unidad de Medida:</label>
-                    <select class="form-select" name="unidad_medida" id="edit_unidad" required>
-                      <option value="unidad">Unidades</option>
-                      <option value="caja">Cajas</option>
-                      <option value="pack">Packs</option>
-                      <option value="rollo">Rollos</option>
-                      <option value="par">Pares</option>
-                      <option value="gramo">Gramos (g)</option>
-                      <option value="kilogramo">Kilogramos (kg)</option>
-                      <option value="metro">Metros (m)</option>
-                      <option value="centimetro">Centímetros (cm)</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Tipo Específico:</label>
-                    <input type="text" class="form-control" name="tipo_especifico" id="edit_tipo" maxlength="50">
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-3">
-                    <label class="form-label">Presentación:</label>
-                    <input type="text" class="form-control" name="presentacion" id="edit_presentacion" maxlength="50">
-                  </div>
-                </div>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Tamaño/Peso:</label>
+                <input type="text" class="form-control" name="tamaño_peso" id="edit_tamaño" maxlength="50">
               </div>
             </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Cantidad por Unidad:</label>
+                <input type="text" class="form-control" name="cantidad_unidad" id="edit_cantidad" maxlength="50">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Presentación:</label>
+                <input type="text" class="form-control" name="presentacion" id="edit_presentacion" maxlength="50">
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Tipo Específico:</label>
+            <input type="text" class="form-control" name="tipo_especifico" id="edit_tipo" maxlength="50">
           </div>
           
           <div class="row">
@@ -545,9 +471,6 @@ $categorias = $conn->query($sql_categorias);
   </div>
 </div>
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
 <script>
 // Script para cargar datos en el modal de edición
 document.addEventListener('DOMContentLoaded', function() {
@@ -559,28 +482,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const id = button.getAttribute('data-id');
         const nombre = button.getAttribute('data-nombre');
         const descripcion = button.getAttribute('data-descripcion');
-        const categoria = button.getAttribute('data-categoria');
         const unidad = button.getAttribute('data-unidad');
         const stock = button.getAttribute('data-stock');
         const stockmin = button.getAttribute('data-stockmin');
-        const ancho = button.getAttribute('data-ancho') || '0';
-        const largo = button.getAttribute('data-largo') || '0';
-        const tipo = button.getAttribute('data-tipo') || '';
         const presentacion = button.getAttribute('data-presentacion') || '';
-        const cantidad = button.getAttribute('data-cantidad') || '0';
+        const tamaño = button.getAttribute('data-tamaño') || '';
+        const cantidad = button.getAttribute('data-cantidad') || '';
+        const tipo = button.getAttribute('data-tipo') || '';
         
         document.getElementById('edit_id_producto').value = id;
         document.getElementById('edit_nombre').value = nombre;
         document.getElementById('edit_descripcion').value = descripcion;
-        document.getElementById('edit_categoria').value = categoria;
         document.getElementById('edit_unidad').value = unidad;
         document.getElementById('edit_stock').value = stock;
         document.getElementById('edit_stockmin').value = stockmin;
-        document.getElementById('edit_ancho').value = ancho;
-        document.getElementById('edit_largo').value = largo;
-        document.getElementById('edit_tipo').value = tipo;
         document.getElementById('edit_presentacion').value = presentacion;
+        document.getElementById('edit_tamaño').value = tamaño;
         document.getElementById('edit_cantidad').value = cantidad;
+        document.getElementById('edit_tipo').value = tipo;
     });
 
     // Búsqueda en tiempo real

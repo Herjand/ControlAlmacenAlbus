@@ -15,8 +15,20 @@ $error = isset($_GET['error']) ? $_GET['error'] : null;
 // Consultar clientes
 $sql = "SELECT * FROM clientes ORDER BY empresa ASC";
 $result = $conn->query($sql);
-?>
 
+// Departamentos de Bolivia
+$departamentos = [
+    'La Paz',
+    'Cochabamba', 
+    'Santa Cruz',
+    'Oruro',
+    'Potosi',
+    'Tarija',
+    'Chuquisaca',
+    'Beni',
+    'Pando'
+];
+?>
 <div class="container-fluid">
     <h2><i class="bi bi-people"></i> Gestión de Clientes</h2>
     <p class="text-muted">Administra la información de empresas clientes.</p>
@@ -98,8 +110,9 @@ $result = $conn->query($sql);
                             <tr>
                                 <th>Empresa</th>
                                 <th>Contacto</th>
-                                <th>Teléfono</th>
-                                <th>Email</th>
+                                <th>NIT</th>
+                                <th>Ubicación</th>
+                                <th>Contacto</th>
                                 <th>Fecha Registro</th>
                                 <th>Acciones</th>
                             </tr>
@@ -112,20 +125,37 @@ $result = $conn->query($sql);
                                     </td>
                                     <td><?php echo htmlspecialchars($row['contacto']); ?></td>
                                     <td>
-                                        <?php if ($row['telefono']): ?>
-                                            <span class="badge bg-secondary"><?php echo htmlspecialchars($row['telefono']); ?></span>
+                                        <?php if ($row['nit']): ?>
+                                            <span class="badge bg-dark"><?php echo htmlspecialchars($row['nit']); ?></span>
                                         <?php else: ?>
                                             <span class="text-muted">-</span>
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?php if ($row['email']): ?>
-                                            <a href="mailto:<?php echo htmlspecialchars($row['email']); ?>" class="text-decoration-none">
-                                                <?php echo htmlspecialchars($row['email']); ?>
-                                            </a>
+                                        <?php if ($row['ciudad']): ?>
+                                            <small>
+                                                <?php echo htmlspecialchars($row['ciudad']); ?>
+                                                <?php if ($row['direccion']): ?>
+                                                    <br><span class="text-muted"><?php echo htmlspecialchars($row['direccion']); ?></span>
+                                                <?php endif; ?>
+                                            </small>
                                         <?php else: ?>
                                             <span class="text-muted">-</span>
                                         <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <div class="small">
+                                            <?php if ($row['telefono']): ?>
+                                                <div>📞 <?php echo htmlspecialchars($row['telefono']); ?></div>
+                                            <?php endif; ?>
+                                            <?php if ($row['email']): ?>
+                                                <div>
+                                                    <a href="mailto:<?php echo htmlspecialchars($row['email']); ?>" class="text-decoration-none">
+                                                        ✉️ <?php echo htmlspecialchars($row['email']); ?>
+                                                    </a>
+                                                </div>
+                                            <?php endif; ?>
+                                        </div>
                                     </td>
                                     <td><?php echo date('d/m/Y', strtotime($row['created_at'])); ?></td>
                                     <td>
@@ -136,7 +166,10 @@ $result = $conn->query($sql);
                                                 data-empresa="<?php echo htmlspecialchars($row['empresa']); ?>"
                                                 data-contacto="<?php echo htmlspecialchars($row['contacto']); ?>"
                                                 data-telefono="<?php echo htmlspecialchars($row['telefono']); ?>"
-                                                data-email="<?php echo htmlspecialchars($row['email']); ?>">
+                                                data-email="<?php echo htmlspecialchars($row['email']); ?>"
+                                                data-nit="<?php echo htmlspecialchars($row['nit']); ?>"
+                                                data-direccion="<?php echo htmlspecialchars($row['direccion']); ?>"
+                                                data-ciudad="<?php echo htmlspecialchars($row['ciudad']); ?>">
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
                                         <a href="funcionalidad_clientes/eliminar_cliente.php?id=<?php echo $row['id_cliente']; ?>" 
@@ -162,7 +195,7 @@ $result = $conn->query($sql);
 
 <!-- MODAL NUEVO CLIENTE -->
 <div class="modal fade" id="nuevoClienteModal" tabindex="-1" aria-labelledby="nuevoClienteLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <form action="funcionalidad_clientes/registrar_cliente.php" method="POST">
         <div class="modal-header bg-primary text-white">
@@ -170,21 +203,59 @@ $result = $conn->query($sql);
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label">Empresa:</label>
-            <input type="text" class="form-control" name="empresa" required maxlength="50" placeholder="Nombre de la empresa">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Empresa:</label>
+                <input type="text" class="form-control" name="empresa" required maxlength="50" placeholder="Nombre de la empresa">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">NIT:</label>
+                <input type="text" class="form-control" name="nit" maxlength="20" placeholder="Número de identificación tributaria">
+              </div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Persona de Contacto:</label>
-            <input type="text" class="form-control" name="contacto" required maxlength="50" placeholder="Nombre del contacto">
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Persona de Contacto:</label>
+                <input type="text" class="form-control" name="contacto" required maxlength="50" placeholder="Nombre del contacto">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Teléfono:</label>
+                <input type="text" class="form-control" name="telefono" maxlength="15" placeholder="Opcional">
+              </div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Teléfono:</label>
-            <input type="text" class="form-control" name="telefono" maxlength="15" placeholder="Opcional">
-          </div>
+
           <div class="mb-3">
             <label class="form-label">Email:</label>
             <input type="email" class="form-control" name="email" maxlength="50" placeholder="Opcional">
+          </div>
+
+          <div class="row">
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label class="form-label">Dirección:</label>
+                <input type="text" class="form-control" name="direccion" maxlength="100" placeholder="Dirección completa">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Departamento:</label>
+                <select class="form-select" name="ciudad">
+                  <option value="">Seleccionar departamento...</option>
+                  <?php foreach ($departamentos as $depto): ?>
+                    <option value="<?php echo $depto; ?>"><?php echo $depto; ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -202,7 +273,7 @@ $result = $conn->query($sql);
 
 <!-- MODAL EDITAR CLIENTE -->
 <div class="modal fade" id="editarClienteModal" tabindex="-1" aria-labelledby="editarClienteLabel" aria-hidden="true">
-  <div class="modal-dialog">
+  <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <form action="funcionalidad_clientes/editar_cliente.php" method="POST">
         <div class="modal-header bg-warning text-dark">
@@ -211,21 +282,60 @@ $result = $conn->query($sql);
         </div>
         <div class="modal-body">
           <input type="hidden" name="id_cliente" id="edit_id_cliente">
-          <div class="mb-3">
-            <label class="form-label">Empresa:</label>
-            <input type="text" class="form-control" name="empresa" id="edit_empresa" required maxlength="50">
+          
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Empresa:</label>
+                <input type="text" class="form-control" name="empresa" id="edit_empresa" required maxlength="50">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">NIT:</label>
+                <input type="text" class="form-control" name="nit" id="edit_nit" maxlength="20">
+              </div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Persona de Contacto:</label>
-            <input type="text" class="form-control" name="contacto" id="edit_contacto" required maxlength="50">
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Persona de Contacto:</label>
+                <input type="text" class="form-control" name="contacto" id="edit_contacto" required maxlength="50">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label class="form-label">Teléfono:</label>
+                <input type="text" class="form-control" name="telefono" id="edit_telefono" maxlength="15">
+              </div>
+            </div>
           </div>
-          <div class="mb-3">
-            <label class="form-label">Teléfono:</label>
-            <input type="text" class="form-control" name="telefono" id="edit_telefono" maxlength="15">
-          </div>
+
           <div class="mb-3">
             <label class="form-label">Email:</label>
             <input type="email" class="form-control" name="email" id="edit_email" maxlength="50">
+          </div>
+
+          <div class="row">
+            <div class="col-md-8">
+              <div class="mb-3">
+                <label class="form-label">Dirección:</label>
+                <input type="text" class="form-control" name="direccion" id="edit_direccion" maxlength="100">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label class="form-label">Departamento:</label>
+                <select class="form-select" name="ciudad" id="edit_ciudad">
+                  <option value="">Seleccionar departamento...</option>
+                  <?php foreach ($departamentos as $depto): ?>
+                    <option value="<?php echo $depto; ?>"><?php echo $depto; ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+            </div>
           </div>
         </div>
         <div class="modal-footer">
@@ -254,6 +364,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('edit_contacto').value = button.getAttribute('data-contacto');
         document.getElementById('edit_telefono').value = button.getAttribute('data-telefono') || '';
         document.getElementById('edit_email').value = button.getAttribute('data-email') || '';
+        document.getElementById('edit_nit').value = button.getAttribute('data-nit') || '';
+        document.getElementById('edit_direccion').value = button.getAttribute('data-direccion') || '';
+        document.getElementById('edit_ciudad').value = button.getAttribute('data-ciudad') || '';
     });
 
     // Búsqueda en tiempo real
