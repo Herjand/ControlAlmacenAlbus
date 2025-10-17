@@ -11,28 +11,32 @@ if (!isset($_SESSION['usuario_id'])) {
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Obtener datos del formulario
     $nombre = trim($_POST['nombre']);
+    
+    // Si se seleccionó "otros", usar el nombre personalizado
+    if ($nombre === 'otros' && isset($_POST['nombre_personalizado'])) {
+        $nombre = trim($_POST['nombre_personalizado']);
+    }
+    
     $descripcion = trim($_POST['descripcion']);
-    $categoria = trim($_POST['categoria']);
-    $unidad_medida = trim($_POST['unidad_medida']);
+    $presentacion = trim($_POST['presentacion']);
     $stock = intval($_POST['stock']);
     $stock_minimo = intval($_POST['stock_minimo']);
-    $ancho = floatval($_POST['ancho']);
-    $largo = floatval($_POST['largo']);
+    $tamaño_peso = trim($_POST['tamaño_peso']);
+    $cantidad_unidad = trim($_POST['cantidad_unidad']);
     $tipo_especifico = trim($_POST['tipo_especifico']);
-    $presentacion = trim($_POST['presentacion']);
     
     // Validar campos requeridos
-    if (empty($nombre) || empty($categoria) || empty($unidad_medida)) {
+    if (empty($nombre) || empty($presentacion)) {
         header("Location: ../productos_admin.php?error=2");
         exit();
     }
     
     // Insertar el producto
-    $sql = "INSERT INTO productos (nombre, descripcion, categoria, unidad_medida, stock, stock_minimo, ancho, largo, tipo_especifico, presentacion) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $sql = "INSERT INTO productos (nombre, descripcion, presentacion, stock, stock_minimo, tamaño_peso, cantidad_unidad, tipo_especifico) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     
     $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssssiiidds", $nombre, $descripcion, $categoria, $unidad_medida, $stock, $stock_minimo, $ancho, $largo, $tipo_especifico, $presentacion);
+    $stmt->bind_param("sssiisss", $nombre, $descripcion, $presentacion, $stock, $stock_minimo, $tamaño_peso, $cantidad_unidad, $tipo_especifico);
     
     if ($stmt->execute()) {
         // Verificar si el usuario existe antes de insertar en logs

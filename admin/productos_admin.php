@@ -43,7 +43,7 @@ $result = $conn->query($sql);
             <?php 
             switch($error) {
                 case '1': echo "Error al registrar el producto"; break;
-                case '2': echo "Error: Campos vacíos"; break;
+                case '2': echo "Error: Campos obligatorios vacíos"; break;
                 case '3': echo "Error al eliminar el producto"; break;
                 case '4': echo "No se puede eliminar: Producto tiene movimientos registrados"; break;
                 default: echo "Error en la operación";
@@ -139,7 +139,6 @@ $result = $conn->query($sql);
                                 <th>Producto</th>
                                 <th>Especificaciones</th>
                                 <th>Presentación</th>
-                                <th>Unidad</th>
                                 <th>Stock</th>
                                 <th>Mínimo</th>
                                 <th>Estado</th>
@@ -197,9 +196,6 @@ $result = $conn->query($sql);
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <span class="badge bg-secondary"><?php echo htmlspecialchars($row['unidad_medida']); ?></span>
-                                    </td>
-                                    <td>
                                         <span class="badge <?php echo $clase_stock; ?> fs-6">
                                             <?php echo $row['stock']; ?>
                                         </span>
@@ -217,7 +213,6 @@ $result = $conn->query($sql);
                                                 data-id="<?php echo $row['id_producto']; ?>"
                                                 data-nombre="<?php echo htmlspecialchars($row['nombre']); ?>"
                                                 data-descripcion="<?php echo htmlspecialchars($row['descripcion']); ?>"
-                                                data-unidad="<?php echo htmlspecialchars($row['unidad_medida']); ?>"
                                                 data-stock="<?php echo $row['stock']; ?>"
                                                 data-stockmin="<?php echo $row['stock_minimo']; ?>"
                                                 data-presentacion="<?php echo htmlspecialchars($row['presentacion']); ?>"
@@ -260,7 +255,7 @@ $result = $conn->query($sql);
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Nombre del Producto:</label>
+                <label class="form-label">Nombre del Producto <span class="text-danger">*</span>:</label>
                 <select class="form-select" name="nombre" id="selectProducto" required onchange="actualizarCamposProducto()">
                   <option value="">Seleccionar tipo de producto...</option>
                   <option value="Compresas">Compresas</option>
@@ -284,10 +279,10 @@ $result = $conn->query($sql);
                        placeholder="Especificar nombre del producto" maxlength="50">
               </div>
             </div>
-            <!--<div class="col-md-6">
+            <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Unidad de Medida:</label>
-                <select class="form-select" name="unidad_medida" required>
+                <label class="form-label">Presentación <span class="text-danger">*</span>:</label>
+                <select class="form-select" name="presentacion" required>
                   <option value="">Seleccionar...</option>
                   <option value="Unidades">Unidades</option>
                   <option value="Cajas">Cajas</option>
@@ -295,13 +290,18 @@ $result = $conn->query($sql);
                   <option value="Paquetes">Paquetes</option>
                   <option value="Rollos">Rollos</option>
                   <option value="Pares">Pares</option>
+                  <option value="Yardas">Yardas</option>
+                  <option value="Metros">Metros</option>
+                  <option value="Gramos">Gramos</option>
+                  <option value="Kilogramos">Kilogramos</option>
                 </select>
-              </div> 
-            </div> -->
+                <small class="text-muted">Unidad base para el control de inventario</small>
+              </div>
+            </div>
           </div>
           
           <div class="mb-3">
-            <label class="form-label">Descripción:</label>
+            <label class="form-label">Descripción <span class="text-muted">(Opcional)</span>:</label>
             <textarea class="form-control" name="descripcion" rows="2" maxlength="100" 
                       placeholder="Características adicionales del producto"></textarea>
           </div>
@@ -309,7 +309,7 @@ $result = $conn->query($sql);
           <div class="row">
             <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Tamaño/Peso:</label>
+                <label class="form-label">Tamaño/Peso <span class="text-muted">(Opcional)</span>:</label>
                 <input type="text" class="form-control" name="tamaño_peso" maxlength="50" 
                        placeholder="Ej: 5x5cm, 100gr, 100yds, 22.5cm x 100yds">
                 <small class="text-muted">Dimensiones o peso del producto</small>
@@ -317,7 +317,7 @@ $result = $conn->query($sql);
             </div>
             <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Cantidad por Unidad:</label>
+                <label class="form-label">Cantidad por Unidad <span class="text-muted">(Opcional)</span>:</label>
                 <input type="text" class="form-control" name="cantidad_unidad" maxlength="50" 
                        placeholder="Ej: 40 unidades, 50 unidades, 650 unidades">
                 <small class="text-muted">Contenido de cada unidad</small>
@@ -325,31 +325,25 @@ $result = $conn->query($sql);
             </div>
             <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Presentación:</label>
-                <input type="text" class="form-control" name="presentacion" maxlength="50" 
-                       placeholder="Ej: Caja, Bolsa, Paquete">
+                <label class="form-label">Tipo Específico <span class="text-muted">(Opcional)</span>:</label>
+                <input type="text" class="form-control" name="tipo_especifico" maxlength="50" 
+                       placeholder="Ej: Venda, Gasa, Normal, Policotton, Blanca, 1 hrp, 2 hrp, Entero, Laminado">
+                <small class="text-muted">Variante o tipo específico del producto</small>
               </div>
             </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Tipo Específico:</label>
-            <input type="text" class="form-control" name="tipo_especifico" maxlength="50" 
-                   placeholder="Ej: Venda, Gasa, Normal, Policotton, Blanca, 1 hrp, 2 hrp, Entero, Laminado">
-            <small class="text-muted">Variante o tipo específico del producto</small>
           </div>
           
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Stock Inicial:</label>
+                <label class="form-label">Stock Inicial <span class="text-danger">*</span>:</label>
                 <input type="number" class="form-control" name="stock" value="0" min="0" required>
                 <small class="text-muted">Cantidad de unidades en inventario</small>
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Stock Mínimo:</label>
+                <label class="form-label">Stock Mínimo <span class="text-danger">*</span>:</label>
                 <input type="number" class="form-control" name="stock_minimo" value="10" min="1" required>
                 <small class="text-muted">Alerta cuando el stock sea menor</small>
               </div>
@@ -363,6 +357,13 @@ $result = $conn->query($sql);
               • <strong>Vendas:</strong> Tamaño: 5cm | Presentación: Bolsa | Tipo: Normal<br>
               • <strong>Algodón:</strong> Tamaño: 100gr | Presentación: Paquete | Tipo: Entero<br>
               • <strong>Compresas:</strong> Tamaño: 10x10cm | Cantidad: 650 unidades | Presentación: Bolsa | Tipo: Blancas
+            </small>
+          </div>
+
+          <div class="alert alert-warning">
+            <small>
+              <strong>ℹ️ Campos obligatorios:</strong> Nombre, Presentación, Stock Inicial, Stock Mínimo<br>
+              <strong>📦 Campos opcionales:</strong> Descripción, Tamaño/Peso, Cantidad por Unidad, Tipo Específico
             </small>
           </div>
         </div>
@@ -393,66 +394,65 @@ $result = $conn->query($sql);
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Nombre del Producto:</label>
+                <label class="form-label">Nombre del Producto <span class="text-danger">*</span>:</label>
                 <input type="text" class="form-control" name="nombre" id="edit_nombre" required maxlength="50">
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Unidad de Medida:</label>
-                <select class="form-select" name="unidad_medida" id="edit_unidad" required>
+                <label class="form-label">Presentación <span class="text-danger">*</span>:</label>
+                <select class="form-select" name="presentacion" id="edit_presentacion" required>
                   <option value="Unidades">Unidades</option>
                   <option value="Cajas">Cajas</option>
                   <option value="Bolsas">Bolsas</option>
                   <option value="Paquetes">Paquetes</option>
                   <option value="Rollos">Rollos</option>
                   <option value="Pares">Pares</option>
+                  <option value="Yardas">Yardas</option>
+                  <option value="Metros">Metros</option>
+                  <option value="Gramos">Gramos</option>
+                  <option value="Kilogramos">Kilogramos</option>
                 </select>
               </div>
             </div>
           </div>
           
           <div class="mb-3">
-            <label class="form-label">Descripción:</label>
+            <label class="form-label">Descripción <span class="text-muted">(Opcional)</span>:</label>
             <textarea class="form-control" name="descripcion" id="edit_descripcion" rows="2" maxlength="100"></textarea>
           </div>
 
           <div class="row">
             <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Tamaño/Peso:</label>
+                <label class="form-label">Tamaño/Peso <span class="text-muted">(Opcional)</span>:</label>
                 <input type="text" class="form-control" name="tamaño_peso" id="edit_tamaño" maxlength="50">
               </div>
             </div>
             <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Cantidad por Unidad:</label>
+                <label class="form-label">Cantidad por Unidad <span class="text-muted">(Opcional)</span>:</label>
                 <input type="text" class="form-control" name="cantidad_unidad" id="edit_cantidad" maxlength="50">
               </div>
             </div>
             <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Presentación:</label>
-                <input type="text" class="form-control" name="presentacion" id="edit_presentacion" maxlength="50">
+                <label class="form-label">Tipo Específico <span class="text-muted">(Opcional)</span>:</label>
+                <input type="text" class="form-control" name="tipo_especifico" id="edit_tipo" maxlength="50">
               </div>
             </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label">Tipo Específico:</label>
-            <input type="text" class="form-control" name="tipo_especifico" id="edit_tipo" maxlength="50">
           </div>
           
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Stock Actual:</label>
+                <label class="form-label">Stock Actual <span class="text-danger">*</span>:</label>
                 <input type="number" class="form-control" name="stock" id="edit_stock" min="0" required>
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Stock Mínimo:</label>
+                <label class="form-label">Stock Mínimo <span class="text-danger">*</span>:</label>
                 <input type="number" class="form-control" name="stock_minimo" id="edit_stockmin" min="1" required>
               </div>
             </div>
@@ -482,7 +482,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const id = button.getAttribute('data-id');
         const nombre = button.getAttribute('data-nombre');
         const descripcion = button.getAttribute('data-descripcion');
-        const unidad = button.getAttribute('data-unidad');
         const stock = button.getAttribute('data-stock');
         const stockmin = button.getAttribute('data-stockmin');
         const presentacion = button.getAttribute('data-presentacion') || '';
@@ -493,10 +492,9 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('edit_id_producto').value = id;
         document.getElementById('edit_nombre').value = nombre;
         document.getElementById('edit_descripcion').value = descripcion;
-        document.getElementById('edit_unidad').value = unidad;
+        document.getElementById('edit_presentacion').value = presentacion;
         document.getElementById('edit_stock').value = stock;
         document.getElementById('edit_stockmin').value = stockmin;
-        document.getElementById('edit_presentacion').value = presentacion;
         document.getElementById('edit_tamaño').value = tamaño;
         document.getElementById('edit_cantidad').value = cantidad;
         document.getElementById('edit_tipo').value = tipo;

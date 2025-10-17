@@ -206,13 +206,13 @@ $departamentos = [
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Empresa:</label>
+                <label class="form-label">Empresa <span class="text-danger">*</span>:</label>
                 <input type="text" class="form-control" name="empresa" required maxlength="50" placeholder="Nombre de la empresa">
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">NIT:</label>
+                <label class="form-label">NIT <span class="text-muted">(Opcional)</span>:</label>
                 <input type="text" class="form-control" name="nit" maxlength="20" placeholder="Número de identificación tributaria">
               </div>
             </div>
@@ -221,33 +221,33 @@ $departamentos = [
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Persona de Contacto:</label>
+                <label class="form-label">Persona de Contacto <span class="text-danger">*</span>:</label>
                 <input type="text" class="form-control" name="contacto" required maxlength="50" placeholder="Nombre del contacto">
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Teléfono:</label>
-                <input type="text" class="form-control" name="telefono" maxlength="15" placeholder="Opcional">
+                <label class="form-label">Teléfono <span class="text-muted">(Opcional)</span>:</label>
+                <input type="text" class="form-control" name="telefono" maxlength="15" placeholder="Número de teléfono">
               </div>
             </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Email:</label>
-            <input type="email" class="form-control" name="email" maxlength="50" placeholder="Opcional">
+            <label class="form-label">Email <span class="text-muted">(Opcional)</span>:</label>
+            <input type="email" class="form-control" name="email" maxlength="50" placeholder="correo@empresa.com">
           </div>
 
           <div class="row">
             <div class="col-md-8">
               <div class="mb-3">
-                <label class="form-label">Dirección:</label>
+                <label class="form-label">Dirección <span class="text-muted">(Opcional)</span>:</label>
                 <input type="text" class="form-control" name="direccion" maxlength="100" placeholder="Dirección completa">
               </div>
             </div>
             <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Departamento:</label>
+                <label class="form-label">Departamento <span class="text-muted">(Opcional)</span>:</label>
                 <select class="form-select" name="ciudad">
                   <option value="">Seleccionar departamento...</option>
                   <?php foreach ($departamentos as $depto): ?>
@@ -256,6 +256,14 @@ $departamentos = [
                 </select>
               </div>
             </div>
+          </div>
+
+          <!-- Indicación de campos obligatorios -->
+          <div class="alert alert-warning">
+            <small>
+              <strong>ℹ️ Campos obligatorios:</strong> Empresa, Persona de Contacto<br>
+              <strong>📝 Campos opcionales:</strong> NIT, Teléfono, Email, Dirección, Departamento
+            </small>
           </div>
         </div>
         <div class="modal-footer">
@@ -286,13 +294,13 @@ $departamentos = [
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Empresa:</label>
+                <label class="form-label">Empresa <span class="text-danger">*</span>:</label>
                 <input type="text" class="form-control" name="empresa" id="edit_empresa" required maxlength="50">
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">NIT:</label>
+                <label class="form-label">NIT <span class="text-muted">(Opcional)</span>:</label>
                 <input type="text" class="form-control" name="nit" id="edit_nit" maxlength="20">
               </div>
             </div>
@@ -301,33 +309,33 @@ $departamentos = [
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Persona de Contacto:</label>
+                <label class="form-label">Persona de Contacto <span class="text-danger">*</span>:</label>
                 <input type="text" class="form-control" name="contacto" id="edit_contacto" required maxlength="50">
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Teléfono:</label>
+                <label class="form-label">Teléfono <span class="text-muted">(Opcional)</span>:</label>
                 <input type="text" class="form-control" name="telefono" id="edit_telefono" maxlength="15">
               </div>
             </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Email:</label>
+            <label class="form-label">Email <span class="text-muted">(Opcional)</span>:</label>
             <input type="email" class="form-control" name="email" id="edit_email" maxlength="50">
           </div>
 
           <div class="row">
             <div class="col-md-8">
               <div class="mb-3">
-                <label class="form-label">Dirección:</label>
+                <label class="form-label">Dirección <span class="text-muted">(Opcional)</span>:</label>
                 <input type="text" class="form-control" name="direccion" id="edit_direccion" maxlength="100">
               </div>
             </div>
             <div class="col-md-4">
               <div class="mb-3">
-                <label class="form-label">Departamento:</label>
+                <label class="form-label">Departamento <span class="text-muted">(Opcional)</span>:</label>
                 <select class="form-select" name="ciudad" id="edit_ciudad">
                   <option value="">Seleccionar departamento...</option>
                   <?php foreach ($departamentos as $depto): ?>
@@ -336,6 +344,14 @@ $departamentos = [
                 </select>
               </div>
             </div>
+          </div>
+
+          <!-- Indicación de campos obligatorios -->
+          <div class="alert alert-warning">
+            <small>
+              <strong>ℹ️ Campos obligatorios:</strong> Empresa, Persona de Contacto<br>
+              <strong>📝 Campos opcionales:</strong> NIT, Teléfono, Email, Dirección, Departamento
+            </small>
           </div>
         </div>
         <div class="modal-footer">

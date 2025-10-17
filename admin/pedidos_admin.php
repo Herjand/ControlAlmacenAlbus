@@ -27,7 +27,7 @@ $sql_clientes = "SELECT id_cliente, empresa, contacto FROM clientes ORDER BY emp
 $clientes_result = $conn->query($sql_clientes);
 
 // Consultar productos para el select
-$sql_productos = "SELECT id_producto, nombre, stock, unidad_medida, tamaño_peso, presentacion, cantidad_unidad, tipo_especifico 
+$sql_productos = "SELECT id_producto, nombre, stock, tamaño_peso, presentacion, cantidad_unidad, tipo_especifico 
                   FROM productos ORDER BY nombre";
 $productos_result = $conn->query($sql_productos);
 ?>
@@ -275,7 +275,7 @@ $productos_result = $conn->query($sql_productos);
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Cliente:</label>
+                <label class="form-label">Cliente <span class="text-danger">*</span>:</label>
                 <select class="form-select" name="id_cliente" required id="selectCliente" onchange="actualizarDatosCliente()">
                   <option value="">Seleccionar cliente...</option>
                   <?php if ($clientes_result && $clientes_result->num_rows > 0): ?>
@@ -294,7 +294,7 @@ $productos_result = $conn->query($sql_productos);
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Persona de Contacto:</label>
+                <label class="form-label">Persona de Contacto <span class="text-danger">*</span>:</label>
                 <input type="text" class="form-control" name="persona_contacto" id="persona_contacto" required maxlength="50" placeholder="Seleccione un cliente">
               </div>
             </div>
@@ -306,28 +306,29 @@ $productos_result = $conn->query($sql_productos);
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Nota de Remisión:</label>
+                <label class="form-label">Nota de Remisión <span class="text-muted">(Opcional)</span>:</label>
                 <input type="text" class="form-control" name="nota_remision" maxlength="15" placeholder="Ej: 12345">
                 <small class="text-muted">Número de remisión (opcional)</small>
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Fecha de Entrega:</label>
+                <label class="form-label">Fecha de Entrega <span class="text-danger">*</span>:</label>
                 <input type="date" class="form-control" name="fecha_entrega" required min="<?php echo date('Y-m-d'); ?>">
               </div>
             </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Lugar de Entrega:</label>
-            <input type="text" class="form-control" name="lugar_entrega" maxlength="100" placeholder="Dirección específica de entrega">
+            <label class="form-label">Lugar de Entrega <span class="text-danger">*</span>:</label>
+            <input type="text" class="form-control" name="lugar_entrega" maxlength="100" placeholder="Dirección específica de entrega" required>
           </div>
 
           <!-- Productos del Pedido -->
           <div class="card mb-3">
             <div class="card-header bg-light">
-              <h6 class="mb-0"><i class="bi bi-box-seam"></i> Productos del Pedido</h6>
+              <h6 class="mb-0"><i class="bi bi-box-seam"></i> Productos del Pedido <span class="text-danger">*</span></h6>
+              <small class="text-muted">Debe agregar al menos un producto</small>
             </div>
             <div class="card-body">
               <div id="productosContainer">
@@ -342,6 +343,14 @@ $productos_result = $conn->query($sql_productos);
           <div class="alert alert-info">
             <i class="bi bi-info-circle"></i> <strong>Nota:</strong> Los pedidos se registran sin validar stock. 
             El sistema solo mostrará información sobre la disponibilidad para planificación.
+          </div>
+
+          <!-- Indicación de campos obligatorios -->
+          <div class="alert alert-warning">
+            <small>
+              <strong>ℹ️ Campos obligatorios:</strong> Cliente, Persona de Contacto, Fecha de Entrega, Lugar de Entrega, Productos<br>
+              <strong>📝 Campos opcionales:</strong> Nota de Remisión
+            </small>
           </div>
         </div>
         <div class="modal-footer">
@@ -371,7 +380,7 @@ $productos_result = $conn->query($sql_productos);
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Cliente:</label>
+                <label class="form-label">Cliente <span class="text-danger">*</span>:</label>
                 <select class="form-select" name="id_cliente" id="edit_id_cliente" required>
                   <option value="">Seleccionar cliente...</option>
                   <?php 
@@ -388,7 +397,7 @@ $productos_result = $conn->query($sql_productos);
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Persona de Contacto:</label>
+                <label class="form-label">Persona de Contacto <span class="text-danger">*</span>:</label>
                 <input type="text" class="form-control" name="persona_contacto" id="edit_contacto" required>
               </div>
             </div>
@@ -397,30 +406,38 @@ $productos_result = $conn->query($sql_productos);
           <div class="row">
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Nota de Remisión:</label>
+                <label class="form-label">Nota de Remisión <span class="text-muted">(Opcional)</span>:</label>
                 <input type="text" class="form-control" name="nota_remision" id="edit_remision" maxlength="15">
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label class="form-label">Fecha de Entrega:</label>
+                <label class="form-label">Fecha de Entrega <span class="text-danger">*</span>:</label>
                 <input type="date" class="form-control" name="fecha_entrega" id="edit_fecha" required>
               </div>
             </div>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Lugar de Entrega:</label>
-            <input type="text" class="form-control" name="lugar_entrega" id="edit_lugar" maxlength="100">
+            <label class="form-label">Lugar de Entrega <span class="text-danger">*</span>:</label>
+            <input type="text" class="form-control" name="lugar_entrega" id="edit_lugar" maxlength="100" required>
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Estado:</label>
+            <label class="form-label">Estado <span class="text-danger">*</span>:</label>
             <select class="form-select" name="estado" id="edit_estado" required>
               <option value="Pendiente">Pendiente</option>
               <option value="Completado">Completado</option>
               <option value="Cancelado">Cancelado</option>
             </select>
+          </div>
+
+          <!-- Indicación de campos obligatorios -->
+          <div class="alert alert-warning">
+            <small>
+              <strong>ℹ️ Campos obligatorios:</strong> Cliente, Persona de Contacto, Fecha de Entrega, Lugar de Entrega, Estado<br>
+              <strong>📝 Campos opcionales:</strong> Nota de Remisión
+            </small>
           </div>
         </div>
         <div class="modal-footer">
@@ -435,7 +452,6 @@ $productos_result = $conn->query($sql_productos);
     </div>
   </div>
 </div>
-
 <!-- MODAL VER PEDIDO -->
 <div class="modal fade" id="verPedidoModal" tabindex="-1" aria-labelledby="verPedidoLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">

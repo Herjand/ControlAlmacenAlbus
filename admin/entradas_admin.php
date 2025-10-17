@@ -22,7 +22,7 @@ $sql = "SELECT e.*, p.nombre as producto_nombre, u.nombre as usuario_nombre
 $result = $conn->query($sql);
 
 // Consultar productos para el select - INCLUYENDO ESPECIFICACIONES
-$sql_productos = "SELECT id_producto, nombre, descripcion, stock, unidad_medida, 
+$sql_productos = "SELECT id_producto, nombre, descripcion, stock, 
                          tamaño_peso, presentacion, cantidad_unidad, tipo_especifico 
                   FROM productos 
                   ORDER BY nombre, tipo_especifico, tamaño_peso";
