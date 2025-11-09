@@ -50,7 +50,7 @@ try {
     $pedido = $result_pedido->fetch_assoc();
 
     // Consultar productos del pedido
-    $sql_productos = "SELECT dp.*, p.nombre, p.descripcion, p.unidad_medida, p.stock,
+    $sql_productos = "SELECT dp.*, p.nombre, p.descripcion, p.stock,
                              p.tamaño_peso, p.presentacion, p.cantidad_unidad, p.tipo_especifico
                       FROM detalle_pedidos dp 
                       JOIN productos p ON dp.id_producto = p.id_producto 

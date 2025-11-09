@@ -63,6 +63,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             border-radius: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
+        .forgot-password {
+            font-size: 0.9em;
+            text-decoration: none;
+        }
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+        .register-link {
+            font-size: 0.9em;
+            text-decoration: none;
+        }
+        .register-link:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
@@ -88,7 +102,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <label class="form-label">Contraseña</label>
                             <input type="password" class="form-control" name="contrasena" required>
                         </div>
+                        
+                        <!-- Enlace ¿Olvidaste tu contraseña? -->
+                        <div class="mb-3 text-center">
+                            <a href="recuperar_password.php" class="forgot-password text-muted">
+                                ¿Olvidaste tu contraseña?
+                            </a>
+                        </div>
+                        
                         <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+                        
+                        <!-- Enlace ¿No tienes cuenta? Regístrate -->
+                        <div class="mt-3 text-center">
+                            <a href="registro.php" class="register-link text-primary">
+                                ¿No tienes cuenta? Regístrate
+                            </a>
+                        </div>
                     </form>
                     
                     <div class="mt-3 text-center">

@@ -7,7 +7,7 @@
     <div style="margin-left: 250px; display: flex; justify-content: center; align-items: center; padding: 20px;">
         <footer class="text-center">
             <div class="container-fluid">
-                <p class="mb-0 small text-muted">© 2025 Albus S.R.L. | Sistema de Gestión de Almacén</p>
+                <p class="mb-0 small text-muted">© 2025 Albus S.A. | Sistema de Gestión de Almacén</p>
             </div>
         </footer>
     </div>

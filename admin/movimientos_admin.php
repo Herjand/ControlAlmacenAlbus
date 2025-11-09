@@ -223,7 +223,7 @@ $result = $stmt->get_result();
 </div>
 
 
-<!-- SCRIPT EXPORTAR PDF y EXCEL -->
+<<!-- SCRIPT EXPORTAR PDF y EXCEL -->
 <script>
 function exportarPDF() {
     const fechaInicio = document.querySelector('input[name="fecha_inicio"]').value;
@@ -240,7 +240,7 @@ function exportarPDF() {
         return;
     }
     
-    const url = `funcionalidad_exportar_movimientos/exportar_pdf.php?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&tipo_movimiento=${tipo}`;
+    const url = `funcionalidad_exportar_movimientos/exportar_pdfmovimientos.php?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&tipo_movimiento=${tipo}`;
     abrirExportacion(url, 'PDF');
 }
 
@@ -254,7 +254,12 @@ function exportarExcel() {
         return;
     }
     
-    const url = `funcionalidad_exportar_movimientos/exportar_excel.php?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&tipo_movimiento=${tipo}`;
+    if (new Date(fechaInicio) > new Date(fechaFin)) {
+        alert('La fecha de inicio no puede ser mayor a la fecha final');
+        return;
+    }
+    
+    const url = `funcionalidad_exportar_movimientos/exportar_excelmovimientos.php?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&tipo_movimiento=${tipo}`;
     abrirExportacion(url, 'Excel');
 }
 
@@ -264,6 +269,11 @@ function exportarResumen() {
     
     if (!fechaInicio || !fechaFin) {
         alert('Por favor, seleccione un rango de fechas válido');
+        return;
+    }
+    
+    if (new Date(fechaInicio) > new Date(fechaFin)) {
+        alert('La fecha de inicio no puede ser mayor a la fecha final');
         return;
     }
     
@@ -322,7 +332,12 @@ function mostrarMensajeExito(tipo) {
 </script>
 
 <?php 
-$stmt->close();
-$conn->close();
+// Cerrar conexiones si están abiertas
+if (isset($stmt) && $stmt) {
+    $stmt->close();
+}
+if (isset($conn) && $conn) {
+    $conn->close();
+}
 include '../footer.php';
 ?>

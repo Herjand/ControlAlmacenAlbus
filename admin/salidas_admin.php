@@ -85,8 +85,7 @@ $productos_result = $conn->query($sql_productos);
                                         }
                                     ?>
                                         <option value="<?php echo $producto['id_producto']; ?>" 
-                                                data-stock="<?php echo $producto['stock']; ?>"
-                                                data-unidad="<?php echo $producto['unidad_medida']; ?>"
+                                                data-stock="<?php echo $producto['stock']; ?>"  
                                                 data-especificaciones="<?php echo htmlspecialchars(implode(' • ', $especificaciones)); ?>">
                                             <?php echo htmlspecialchars($producto['nombre'] . $descripcion_detallada); ?> 
                                             (Stock: <?php echo $producto['stock']; ?>)

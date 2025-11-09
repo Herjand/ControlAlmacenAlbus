@@ -121,14 +121,14 @@ include 'header_admin.php';
                 <div class="card-body">
                     <div class="mb-3">
                         <h6><i class="bi bi-geo-alt text-primary"></i> Dirección</h6>
-                        <p class="text-muted small">Av. Industrial #123, Zona Industrial<br>Santa Cruz, Bolivia</p>
+                        <p class="text-muted small">Av. Vásquez N921 #123, Pura-Pura<br>La Paz, Bolivia</p>
                     </div>
                     
                     <div class="mb-3">
                         <h6><i class="bi bi-telephone text-success"></i> Teléfonos</h6>
                         <p class="text-muted small">
-                            📞 (+591) 3-3367890<br>
-                            📞 (+591) 3-3367891
+                            📞 (+591) 2-2367890<br>
+                            📞 (+591) 2-2367891
                         </p>
                     </div>
                     
@@ -143,7 +143,7 @@ include 'header_admin.php';
                     <div class="mb-3">
                         <h6><i class="bi bi-clock text-secondary"></i> Horario de Atención</h6>
                         <p class="text-muted small">
-                            🕗 Lunes a Viernes: 7:00 - 18:00<br>
+                            🕗 Lunes a Viernes: 7:00 - 16:30<br>
                             🕗 Sábados: 7:00 - 12:00
                         </p>
                     </div>

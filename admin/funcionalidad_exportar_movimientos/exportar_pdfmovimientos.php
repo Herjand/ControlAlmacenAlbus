@@ -113,7 +113,7 @@ if ($tipo_movimiento != 'todos') {
 
 $pdf->Ln(10);
 
-// Consulta de movimientos
+// Consulta de movimientos - SIN unidad_medida
 $sql_where = "WHERE m.fecha BETWEEN ? AND ?";
 $params = [$fecha_inicio, $fecha_fin];
 
@@ -123,7 +123,8 @@ if ($tipo_movimiento == 'entrada') {
     $sql_where .= " AND m.tipo = 'Salida'";
 }
 
-$sql = "SELECT m.*, p.nombre as producto_nombre, p.unidad_medida, u.nombre as responsable_nombre 
+// CONSULTA CORREGIDA - SIN p.unidad_medida
+$sql = "SELECT m.*, p.nombre as producto_nombre, u.nombre as responsable_nombre 
         FROM (
             SELECT 'Entrada' as tipo, id_entrada as id, id_producto, cantidad, fecha, usuario_responsable, motivo, observaciones
             FROM entradas
@@ -168,11 +169,12 @@ $pdf->Cell(0, 6, 'Salidas: ' . $total_salidas . ' (' . $total_cantidad_salidas .
 $pdf->Ln(10);
 
 if ($total_movimientos > 0) {
-    // Tabla de movimientos
+    // Tabla de movimientos - SIN columna "Unidad"
     $pdf->SetFont('helvetica', 'B', 9);
-    $header = array('Fecha/Hora', 'Tipo', 'Producto', 'Cantidad', 'Unidad', 'Responsable', 'Motivo');
+    $header = array('Fecha/Hora', 'Tipo', 'Producto', 'Cantidad', 'Responsable', 'Motivo');
     
-    $w = array(25, 15, 45, 15, 15, 30, 45);
+    // Ajustar anchos de columnas (sin la columna Unidad)
+    $w = array(25, 15, 60, 15, 35, 50);
     
     // Cabecera de la tabla
     for($i = 0; $i < count($header); $i++) {
@@ -197,11 +199,10 @@ if ($total_movimientos > 0) {
         
         $pdf->Cell($w[0], 6, date('d/m/Y H:i', strtotime($row['fecha'])), 1);
         $pdf->Cell($w[1], 6, $row['tipo'], 1);
-        $pdf->Cell($w[2], 6, substr($row['producto_nombre'], 0, 25), 1);
+        $pdf->Cell($w[2], 6, substr($row['producto_nombre'], 0, 30), 1);
         $pdf->Cell($w[3], 6, $row['cantidad'], 1, 0, 'C');
-        $pdf->Cell($w[4], 6, $row['unidad_medida'], 1, 0, 'C');
-        $pdf->Cell($w[5], 6, substr($row['responsable_nombre'], 0, 18), 1);
-        $pdf->Cell($w[6], 6, substr($row['motivo'], 0, 25), 1);
+        $pdf->Cell($w[4], 6, substr($row['responsable_nombre'], 0, 20), 1);
+        $pdf->Cell($w[5], 6, substr($row['motivo'], 0, 30), 1);
         $pdf->Ln();
     }
 } else {

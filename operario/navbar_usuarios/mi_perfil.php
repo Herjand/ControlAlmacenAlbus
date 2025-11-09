@@ -24,7 +24,7 @@ if ($result->num_rows === 0) {
 $usuario = $result->fetch_assoc();
 
 // Incluir header
-include '../header_admin.php';
+include '../header_operario.php';
 ?>
 
 <div class="container-fluid">

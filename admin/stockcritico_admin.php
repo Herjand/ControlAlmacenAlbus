@@ -78,9 +78,6 @@ $result = $conn->query($sql);
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
             <span><i class="bi bi-list-ul"></i> Productos con Stock Crítico</span>
             <div>
-                <button class="btn btn-sm btn-light" onclick="exportarReporte()">
-                    <i class="bi bi-file-excel"></i> Exportar
-                </button>
                 <a href="entradas_admin.php" class="btn btn-sm btn-success">
                     <i class="bi bi-plus-circle"></i> Registrar Entrada
                 </a>
@@ -125,9 +122,6 @@ $result = $conn->query($sql);
                                         <?php if (!empty($row['descripcion'])): ?>
                                             <br><small class="text-muted"><?php echo htmlspecialchars($row['descripcion']); ?></small>
                                         <?php endif; ?>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-secondary"><?php echo htmlspecialchars($row['categoria']); ?></span>
                                     </td>
                                     <td>
                                         <span class="badge bg-primary"><?php echo $row['stock']; ?></span>
@@ -191,12 +185,6 @@ $result = $conn->query($sql);
     <?php endif; ?>
 </div>
 
-<script>
-function exportarReporte() {
-    alert('Funcionalidad de exportación en desarrollo');
-    // Aquí puedes implementar la exportación a Excel
-}
-</script>
 
 <?php 
 $conn->close();

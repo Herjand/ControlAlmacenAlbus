@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-include '../header_admin.php';
+include '../header_operario.php';
 ?>
 
 <div class="container-fluid">

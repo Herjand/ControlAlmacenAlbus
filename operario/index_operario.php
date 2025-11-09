@@ -1,207 +1,262 @@
-<?php include 'connect.php';
-include 'header.php'; ?>
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control | Albus S.R.L.</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/a2d9d6a6c2.js" crossorigin="anonymous"></script>
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f8f9fa;
-        }
-        .sidebar {
-            height: 100vh;
-            background-color: #1e2a38;
-            padding-top: 20px;
-            position: fixed;
-            width: 230px;
-        }
-        .sidebar a {
-            color: #fff;
-            display: block;
-            padding: 12px 20px;
-            text-decoration: none;
-            border-left: 4px solid transparent;
-            transition: 0.3s;
-        }
-        .sidebar a:hover, .sidebar a.active {
-            background-color: #0d6efd;
-            border-left: 4px solid #00c3ff;
-        }
-        .content {
-            margin-left: 120px;
-            padding: 20px;
-            padding-top: 40px;
-        }
-        .card-summary {
-            color: white;
-            border: none;
-        }
-        .card-purple { background-color: #6f42c1; }
-        .card-green { background-color: #198754; }
-        .card-orange { background-color: #fd7e14; }
-        .card-blue { background-color: #0dcaf0; }
-        footer {
-            text-align: center;
-            margin-top: 40px;
-            color: #777;
-        }
-    </style>
-</head>
-<body>
+<?php
+session_start();
+if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] != 'Operario') {
+    header("Location: ../login.php");
+    exit();
+}
 
-<!-- SIDEBAR 
-<div class="sidebar">
-    <a href="index.php" class="active"><i class="bi bi-house-door"></i> Inicio</a>
-    <a href="productos.php"><i class="bi bi-box"></i> Productos</a>
-    <a href="pedidos.php"><i class="bi bi-cart-check"></i> Pedidos</a>
-    <a href="entradas.php"><i class="bi bi-arrow-down-square"></i> Entradas</a>
-    <a href="salidas.php"><i class="bi bi-arrow-up-square"></i> Salidas</a>
-    <a href="despachos.php"><i class="bi bi-truck"></i> Despachos</a>
-    <a href="logs.php"><i class="bi bi-activity"></i> Logs</a>
-    <hr class="text-secondary">
-    <a href="acerca.php"><i class="bi bi-info-circle"></i> Acerca de nosotros</a>
-    <a href="uso_loteadora.php"><i class="bi bi-gear"></i> Uso correcto de loteadora</a>
-    <a href="croquis.php"><i class="bi bi-map"></i> Croquis del almacén</a>
-</div>
-    -->
+include '../connect.php';
+include 'header_operario.php';
 
-<!-- CONTENIDO -->
-<div class="content">
-    <h2 class="mb-4">Panel de Control <small class="text-muted">Versión 1.0</small></h2>
+// Obtener estadísticas para el dashboard
+$sql_total_productos = "SELECT COUNT(*) as total FROM productos";
+$total_productos = $conn->query($sql_total_productos)->fetch_assoc()['total'];
 
-    <!-- TARJETAS DE RESUMEN -->
+$sql_stock_bajo = "SELECT COUNT(*) as total FROM productos WHERE stock <= stock_minimo AND stock > 0";
+$stock_bajo = $conn->query($sql_stock_bajo)->fetch_assoc()['total'];
+
+$sql_sin_stock = "SELECT COUNT(*) as total FROM productos WHERE stock = 0";
+$sin_stock = $conn->query($sql_sin_stock)->fetch_assoc()['total'];
+
+$sql_pedidos_pendientes = "SELECT COUNT(*) as total FROM pedidos WHERE estado = 'Pendiente'";
+$pedidos_pendientes = $conn->query($sql_pedidos_pendientes)->fetch_assoc()['total'];
+
+// Movimientos del día actual
+$hoy = date('Y-m-d');
+$sql_movimientos_hoy = "SELECT COUNT(*) as total FROM (
+    SELECT id_entrada as id, fecha FROM entradas WHERE DATE(fecha) = '$hoy'
+    UNION ALL 
+    SELECT id_salida as id, fecha FROM salidas WHERE DATE(fecha) = '$hoy'
+) as movimientos";
+$movimientos_hoy = $conn->query($sql_movimientos_hoy)->fetch_assoc()['total'];
+
+// Mis movimientos del mes
+$mes_actual = date('Y-m');
+$id_usuario = $_SESSION['usuario_id'];
+$sql_mis_movimientos = "SELECT COUNT(*) as total FROM (
+    SELECT id_entrada as id, fecha FROM entradas WHERE usuario_responsable = $id_usuario AND DATE_FORMAT(fecha, '%Y-%m') = '$mes_actual'
+    UNION ALL 
+    SELECT id_salida as id, fecha FROM salidas WHERE usuario_responsable = $id_usuario AND DATE_FORMAT(fecha, '%Y-%m') = '$mes_actual'
+) as movimientos";
+$mis_movimientos = $conn->query($sql_mis_movimientos)->fetch_assoc()['total'];
+?>
+
+<div class="container-fluid">
+    <!-- Bienvenida -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card card-summary card-purple">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
                 <div class="card-body">
-                    <h5>INVENTARIO NETO</h5>
-                    <h3>1,497,851.75 Bs</h3>
-                    <p>Productos en stock: 9</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card card-summary card-green">
-                <div class="card-body">
-                    <h5>VENTAS 2025</h5>
-                    <h3>8,927,284.29 Bs</h3>
-                    <p>Pedidos completados: 255</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card card-summary card-orange">
-                <div class="card-body">
-                    <h5>ENTRADAS 2025</h5>
-                    <h3>3,635,078.10 Bs</h3>
-                    <p>Registros realizados: 95</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card card-summary card-blue">
-                <div class="card-body">
-                    <h5>DESPACHOS</h5>
-                    <h3>7,887</h3>
-                    <p>Pedidos entregados</p>
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="card-title mb-1">
+                                <i class="bi bi-person-badge"></i> 
+                                Bienvenido, <?php echo htmlspecialchars($_SESSION['usuario_nombre']); ?>
+                            </h2>
+                            <p class="card-text mb-0">
+                                Panel de Control - Operario de Almacén<br>
+                                <small>Fecha: <?php echo date('d/m/Y'); ?> | Hora: <?php echo date('H:i'); ?></small>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="bg-white bg-opacity-25 p-3 rounded">
+                                <h4 class="mb-0"><?php echo $movimientos_hoy; ?></h4>
+                                <small>Movimientos Hoy</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- GRÁFICO DE BARRAS -->
-    <div class="card mb-4">
-        <div class="card-header bg-light">
-            <h5>Reporte de Movimientos 2025</h5>
+    <!-- Tarjetas de Resumen -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-box-seam display-6 mb-2"></i>
+                    <h3><?php echo $total_productos; ?></h3>
+                    <h6>Total Productos</h6>
+                </div>
+            </div>
         </div>
-        <div class="card-body">
-            <canvas id="grafico"></canvas>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-exclamation-triangle display-6 mb-2"></i>
+                    <h3><?php echo $stock_bajo; ?></h3>
+                    <h6>Stock Bajo</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-x-circle display-6 mb-2"></i>
+                    <h3><?php echo $sin_stock; ?></h3>
+                    <h6>Sin Stock</h6>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body text-center">
+                    <i class="bi bi-cart display-6 mb-2"></i>
+                    <h3><?php echo $pedidos_pendientes; ?></h3>
+                    <h6>Pedidos Pendientes</h6>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- TABLAS DE REGISTROS -->
     <div class="row">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-light">Últimos pedidos</div>
+        <!-- Acciones Rápidas -->
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <i class="bi bi-lightning-charge"></i> Acciones Rápidas
+                </div>
                 <div class="card-body">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID Pedido</th>
-                                <th>Empresa</th>
-                                <th>Fecha</th>
-                                <th>Estado</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>0012</td><td>Ecofoods SRL</td><td>02-10-2025</td><td><span class="badge bg-success">Completado</span></td></tr>
-                            <tr><td>0013</td><td>Alimentos Vega</td><td>03-10-2025</td><td><span class="badge bg-warning text-dark">En progreso</span></td></tr>
-                            <tr><td>0014</td><td>CafeBol</td><td>04-10-2025</td><td><span class="badge bg-danger">Rechazado</span></td></tr>
-                        </tbody>
-                    </table>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="entradas_operario.php" class="btn btn-success w-100 h-100 py-3">
+                                <i class="bi bi-arrow-down-square display-6 mb-2"></i><br>
+                                Registrar Entrada
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="salidas_operario.php" class="btn btn-danger w-100 h-100 py-3">
+                                <i class="bi bi-arrow-up-square display-6 mb-2"></i><br>
+                                Registrar Salida
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="preparar_pedidos.php" class="btn btn-primary w-100 h-100 py-3">
+                                <i class="bi bi-cart-check display-6 mb-2"></i><br>
+                                Preparar Pedidos
+                                <?php if ($pedidos_pendientes > 0): ?>
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                        <?php echo $pedidos_pendientes; ?>
+                                    </span>
+                                <?php endif; ?>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <a href="productos_operario.php" class="btn btn-info w-100 h-100 py-3">
+                                <i class="bi bi-search display-6 mb-2"></i><br>
+                                Consultar Productos
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="stock_operario.php" class="btn btn-warning w-100 h-100 py-3">
+                                <i class="bi bi-graph-up display-6 mb-2"></i><br>
+                                Ver Stock
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <a href="mis_movimientos.php" class="btn btn-secondary w-100 h-100 py-3">
+                                <i class="bi bi-list-ul display-6 mb-2"></i><br>
+                                Mis Movimientos
+                                <small class="d-block">(<?php echo $mis_movimientos; ?> este mes)</small>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header bg-light">Últimas entradas</div>
+        <!-- Información del Operario -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <i class="bi bi-person-badge"></i> Mi Información
+                </div>
                 <div class="card-body">
-                    <table class="table table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <th>ID Entrada</th>
-                                <th>Producto</th>
-                                <th>Cantidad</th>
-                                <th>Fecha</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>0021</td><td>Harina Premium</td><td>50 kg</td><td>01-10-2025</td></tr>
-                            <tr><td>0022</td><td>Cacao Natural</td><td>30 kg</td><td>02-10-2025</td></tr>
-                            <tr><td>0023</td><td>Azúcar sin refinar</td><td>25 kg</td><td>03-10-2025</td></tr>
-                        </tbody>
+                    <div class="text-center mb-3">
+                        <i class="bi bi-person-circle display-1 text-primary"></i>
+                    </div>
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Nombre:</strong></td>
+                            <td><?php echo htmlspecialchars($_SESSION['usuario_nombre']); ?></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rol:</strong></td>
+                            <td><span class="badge bg-primary"><?php echo htmlspecialchars($_SESSION['usuario_rol']); ?></span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Movimientos Hoy:</strong></td>
+                            <td><span class="badge bg-success"><?php echo $movimientos_hoy; ?></span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Movimientos Mes:</strong></td>
+                            <td><span class="badge bg-info"><?php echo $mis_movimientos; ?></span></td>
+                        </tr>
                     </table>
+                    <div class="d-grid gap-2">
+                        <a href="navbar_usuarios/mi_perfil.php" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-person"></i> Mi Perfil
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Alertas Importantes -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <i class="bi bi-exclamation-triangle"></i> Alertas Importantes
+                </div>
+                <div class="card-body">
+                    <?php if ($stock_bajo > 0): ?>
+                        <div class="alert alert-warning d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <div>
+                                <strong>Stock Bajo:</strong> <?php echo $stock_bajo; ?> producto(s) tienen stock por debajo del mínimo.
+                                <a href="stock_operario.php?filtro=bajo" class="alert-link">Ver detalles</a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <?php if ($sin_stock > 0): ?>
+                        <div class="alert alert-danger d-flex align-items-center">
+                            <i class="bi bi-x-circle-fill me-2"></i>
+                            <div>
+                                <strong>Sin Stock:</strong> <?php echo $sin_stock; ?> producto(s) están agotados.
+                                <a href="stock_operario.php?filtro=agotado" class="alert-link">Ver detalles</a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <?php if ($pedidos_pendientes > 0): ?>
+                        <div class="alert alert-info d-flex align-items-center">
+                            <i class="bi bi-cart-check me-2"></i>
+                            <div>
+                                <strong>Pedidos Pendientes:</strong> <?php echo $pedidos_pendientes; ?> pedido(s) esperan preparación.
+                                <a href="preparar_pedidos.php" class="alert-link">Preparar ahora</a>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($stock_bajo == 0 && $sin_stock == 0 && $pedidos_pendientes == 0): ?>
+                        <div class="alert alert-success text-center">
+                            <i class="bi bi-check-circle-fill"></i> 
+                            <strong>¡Todo en orden!</strong> No hay alertas críticas en este momento.
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-const ctx = document.getElementById('grafico');
-new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre'],
-        datasets: [{
-            label: 'Entradas',
-            data: [1200, 1900, 3000, 2500, 2200, 3500, 2700, 3200, 3800, 4100],
-            backgroundColor: '#0d6efd'
-        }, {
-            label: 'Salidas',
-            data: [1000, 1700, 2800, 2300, 2000, 3100, 2500, 3000, 3500, 3900],
-            backgroundColor: '#198754'
-        }]
-    },
-    options: {
-        responsive: true,
-        scales: {
-            y: { beginAtZero: true }
-        }
-    }
-});
-</script>
-
-</body>
-<?php include 'footer.php'; ?>
-</html>
-
+<?php 
+include '../footer.php';
+$conn->close();
+?>

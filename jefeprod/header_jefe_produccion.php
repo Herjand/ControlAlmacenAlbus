@@ -1,7 +1,7 @@
 <?php
-// header_operario.php
+// header_jefe_produccion.php
 session_start();
-if (!isset($_SESSION['usuario_id'])) {
+if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] != 'Jefe de Producción') {
     header("Location: ../login.php");
     exit();
 }
@@ -16,14 +16,14 @@ $current_page = basename($_SERVER['PHP_SELF']);
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
 $host = $_SERVER['HTTP_HOST'];
 $project_folder = 'ControlAlmacenAlbus'; // Cambia esto si tu proyecto está en subcarpeta
-$base_url = $protocol . "://" . $host . "/" . $project_folder . "/operario/";
+$base_url = $protocol . "://" . $host . "/" . $project_folder . "/jefe_produccion/";
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Operario | Albus S.A.</title>
+    <title>Panel Jefe Producción | Albus S.A.</title>
     
     <!-- URL Base para todos los enlaces relativos -->
     <base href="<?php echo $base_url; ?>">
@@ -41,7 +41,7 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/operario/";
             padding: 0;
         }
         .navbar {
-            background-color: #2c3e50;
+            background-color: #27ae60;
             z-index: 1030;
             position: fixed;
             top: 0;
@@ -60,7 +60,7 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/operario/";
         }
         .sidebar {
             height: calc(100vh - 56px);
-            background-color: #34495e;
+            background-color: #2ecc71;
             position: fixed;
             width: 250px;
             top: 56px;
@@ -76,24 +76,24 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/operario/";
             font-size: 0.9rem;
         }
         .sidebar a:hover {
-            background-color: #3498db;
-            border-left: 4px solid #1abc9c;
+            background-color: #229954;
+            border-left: 4px solid #145a32;
         }
         .sidebar a.active {
-            background-color: #3498db;
-            border-left: 4px solid #1abc9c;
+            background-color: #229954;
+            border-left: 4px solid #145a32;
             font-weight: 500;
         }
         .sidebar-section {
-            color: #bdc3c7;
+            color: #d5f5e3;
             font-size: 0.8rem;
             font-weight: bold;
             text-transform: uppercase;
             padding: 12px 20px 5px 20px;
-            border-bottom: 1px solid #2c3e50;
+            border-bottom: 1px solid #229954;
         }
         .sidebar-divider {
-            border-top: 1px solid #2c3e50;
+            border-top: 1px solid #229954;
             margin: 10px 20px;
         }
         .content {
@@ -112,24 +112,28 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/operario/";
             width: 6px;
         }
         .sidebar::-webkit-scrollbar-thumb {
-            background: #7f8c8d;
+            background: #229954;
             border-radius: 3px;
         }
         .sidebar::-webkit-scrollbar-thumb:hover {
-            background: #95a5a6;
+            background: #1e8449;
         }
-        .badge-operario {
-            background-color: #e74c3c;
+        .badge-jefe {
+            background-color: #f39c12;
             font-size: 0.7em;
+        }
+        .alert-stock {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
         }
     </style>
 </head>
 <body>
 <!-- NAV SUPERIOR -->
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #2c3e50;">
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #27ae60;">
     <div class="container-fluid">
-        <a class="navbar-brand" href="index_operario.php">
-            <i class="bi bi-box-seam"></i> Albus S.A. - Operario
+        <a class="navbar-brand" href="index_jefe_produccion.php">
+            <i class="bi bi-clipboard-data"></i> Albus S.A. - Jefe Producción
         </a>
 
         <!-- Botón toggle para móviles -->
@@ -143,7 +147,7 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/operario/";
                 <!-- Usuario -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle"></i> 
+                        <i class="bi bi-person-gear"></i> 
                         <?php 
                         echo htmlspecialchars($usuario); 
                         if(isset($rol) && !empty($rol)) {
@@ -157,7 +161,7 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/operario/";
                             <div class="dropdown-header">
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0">
-                                        <i class="bi bi-person-badge fs-4 text-primary"></i>
+                                        <i class="bi bi-person-badge fs-4 text-success"></i>
                                     </div>
                                     <div class="flex-grow-1 ms-2">
                                         <h6 class="mb-0"><?php echo htmlspecialchars($usuario); ?></h6>
@@ -202,57 +206,71 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/operario/";
     <!-- SIDEBAR -->
     <div class="sidebar">
         <!-- ENLACE INICIO - PRIMER ELEMENTO -->
-        <a href="index_operario.php" class="<?php echo ($current_page == 'index_operario.php') ? 'active' : ''; ?>">
+        <a href="index_jefe_produccion.php" class="<?php echo ($current_page == 'index_jefe_produccion.php') ? 'active' : ''; ?>">
             <i class="bi bi-house-door"></i> Inicio
         </a>
 
-        <!-- OPERACIONES DIARIAS -->
+        <!-- SUPERVISIÓN Y CONTROL -->
         <div class="sidebar-section">
-            <i class="bi bi-clipboard-check"></i> OPERACIONES
+            <i class="bi bi-eye"></i> SUPERVISIÓN
         </div>
-        <a href="entradas_operario.php" class="<?php echo ($current_page == 'entradas_operario.php') ? 'active' : ''; ?>">
-            <i class="bi bi-arrow-down-square"></i> Registrar Entradas
+        <a href="entradas_jefe.php" class="<?php echo ($current_page == 'entradas_jefe.php') ? 'active' : ''; ?>">
+            <i class="bi bi-arrow-down-square"></i> Control Entradas
         </a>
-        <a href="salidas_operario.php" class="<?php echo ($current_page == 'salidas_operario.php') ? 'active' : ''; ?>">
-            <i class="bi bi-arrow-up-square"></i> Registrar Salidas
+        <a href="salidas_jefe.php" class="<?php echo ($current_page == 'salidas_jefe.php') ? 'active' : ''; ?>">
+            <i class="bi bi-arrow-up-square"></i> Control Salidas
         </a>
-        <a href="preparar_pedidos.php" class="<?php echo ($current_page == 'preparar_pedidos.php') ? 'active' : ''; ?>">
-            <i class="bi bi-cart-check"></i> Preparar Pedidos
+        <a href="movimientos_jefe.php" class="<?php echo ($current_page == 'movimientos_jefe.php') ? 'active' : ''; ?>">
+            <i class="bi bi-arrow-left-right"></i> Movimientos Totales
         </a>
 
-        <!-- CONSULTAS -->
+        <!-- STOCK Y SEGURIDAD -->
         <div class="sidebar-section">
-            <i class="bi bi-search"></i> CONSULTAS
+            <i class="bi bi-shield-check"></i> STOCK SEGURO
         </div>
-        <a href="productos_operario.php" class="<?php echo ($current_page == 'productos_operario.php') ? 'active' : ''; ?>">
-            <i class="bi bi-box"></i> Ver Productos
+        <a href="stock_seguridad.php" class="<?php echo ($current_page == 'stock_seguridad.php') ? 'active' : ''; ?>">
+            <i class="bi bi-graph-up-arrow"></i> Stock de Seguridad
         </a>
-        <a href="stock_operario.php" class="<?php echo ($current_page == 'stock_operario.php') ? 'active' : ''; ?>">
-            <i class="bi bi-graph-up"></i> Consultar Stock
+        <a href="alertas_stock.php" class="<?php echo ($current_page == 'alertas_stock.php') ? 'active' : ''; ?>">
+            <i class="bi bi-exclamation-triangle"></i> Alertas Stock
         </a>
-        <a href="pedidos_operario.php" class="<?php echo ($current_page == 'pedidos_operario.php') ? 'active' : ''; ?>">
-            <i class="bi bi-list-check"></i> Ver Pedidos
+        <a href="productos_jefe.php" class="<?php echo ($current_page == 'productos_jefe.php') ? 'active' : ''; ?>">
+            <i class="bi bi-box-seam"></i> Catálogo Productos
         </a>
 
-        <!-- MOVIMIENTOS -->
+        <!-- PEDIDOS Y PRODUCCIÓN -->
         <div class="sidebar-section">
-            <i class="bi bi-clock-history"></i> MOVIMIENTOS
+            <i class="bi bi-clipboard-check"></i> PRODUCCIÓN
         </div>
-        <a href="movimientos_operario.php" class="<?php echo ($current_page == 'movimientos_operario.php') ? 'active' : ''; ?>">
-            <i class="bi bi-list-ul"></i> Mis Movimientos
+        <a href="pedidos_jefe.php" class="<?php echo ($current_page == 'pedidos_jefe.php') ? 'active' : ''; ?>">
+            <i class="bi bi-list-check"></i> Estado Pedidos
+        </a>
+        <a href="planificacion_produccion.php" class="<?php echo ($current_page == 'planificacion_produccion.php') ? 'active' : ''; ?>">
+            <i class="bi bi-calendar-check"></i> Planificación
+        </a>
+
+        <!-- REPORTES Y ANÁLISIS -->
+        <div class="sidebar-section">
+            <i class="bi bi-bar-chart"></i> REPORTES
+        </div>
+        <a href="reportes_entradas_salidas.php" class="<?php echo ($current_page == 'reportes_entradas_salidas.php') ? 'active' : ''; ?>">
+            <i class="bi bi-file-earmark-text"></i> Entradas/Salidas
+        </a>
+        <a href="reportes_stock.php" class="<?php echo ($current_page == 'reportes_stock.php') ? 'active' : ''; ?>">
+            <i class="bi bi-graph-up"></i> Análisis Stock
+        </a>
+        <a href="reportes_eficiencia.php" class="<?php echo ($current_page == 'reportes_eficiencia.php') ? 'active' : ''; ?>">
+            <i class="bi bi-speedometer2"></i> Eficiencia
         </a>
 
         <div class="sidebar-divider"></div>
 
-        <!-- AYUDA Y RECURSOS -->
+        <!-- CONFIGURACIÓN -->
         <div class="sidebar-section">
-            <i class="bi bi-question-circle"></i> RECURSOS
+            <i class="bi bi-gear"></i> CONFIGURACIÓN
         </div>
-        <a href="ubicacion_almacen.php" class="<?php echo ($current_page == 'ubicacion_almacen.php') ? 'active' : ''; ?>">
-            <i class="bi bi-map"></i> Croquis Almacén
-        </a>
-        <a href="uso_equipos.php" class="<?php echo ($current_page == 'uso_equipos.php') ? 'active' : ''; ?>">
-            <i class="bi bi-tools"></i> Uso de Equipos
+        <a href="configuracion_stock.php" class="<?php echo ($current_page == 'configuracion_stock.php') ? 'active' : ''; ?>">
+            <i class="bi bi-sliders"></i> Stock Mínimo
         </a>
     </div>
 

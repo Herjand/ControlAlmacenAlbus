@@ -173,8 +173,8 @@ $modulos_result = $conn->query($sql_modulos);
     <div class="card shadow-sm">
         <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
             <span><i class="bi bi-list-ul"></i> Registro de Actividades</span>
-            <button class="btn btn-sm btn-light" onclick="exportarAuditoria()">
-                <i class="bi bi-file-text"></i> Exportar Log
+            <button class="btn btn-sm btn-light" onclick="exportarAuditoriaExcel()">
+                <i class="bi bi-file-earmark-excel"></i> Exportar Excel
             </button>
         </div>
         <div class="card-body">
@@ -284,10 +284,75 @@ $modulos_result = $conn->query($sql_modulos);
     </div>
 </div>
 
+<!-- SCRIPT EXPORTAR AUDITORÍA -->
 <script>
-function exportarAuditoria() {
-    alert('Funcionalidad de exportación de auditoría en desarrollo');
-    // Aquí puedes implementar la exportación del log de auditoría
+function exportarAuditoriaExcel() {
+    const fechaInicio = document.querySelector('input[name="fecha_inicio"]').value;
+    const fechaFin = document.querySelector('input[name="fecha_fin"]').value;
+    const usuario = document.querySelector('select[name="usuario"]').value;
+    const modulo = document.querySelector('select[name="modulo"]').value;
+    
+    if (!fechaInicio || !fechaFin) {
+        alert('Por favor, seleccione un rango de fechas válido');
+        return;
+    }
+    
+    if (new Date(fechaInicio) > new Date(fechaFin)) {
+        alert('La fecha de inicio no puede ser mayor a la fecha final');
+        return;
+    }
+    
+    const url = `funcionalidad_exportar_auditoria/exportar_excelauditoria.php?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}&usuario=${usuario}&modulo=${modulo}`;
+    abrirExportacion(url, 'Excel (Auditoría)');
+}
+
+function abrirExportacion(url, tipo) {
+    mostrarMensajeCarga(tipo);
+    
+    const nuevaVentana = window.open(url, '_blank');
+    
+    if (!nuevaVentana) {
+        alert('Por favor, permita ventanas emergentes para descargar el reporte');
+        removerMensajeCarga();
+        return;
+    }
+    
+    setTimeout(() => {
+        removerMensajeCarga();
+        mostrarMensajeExito(tipo);
+    }, 3000);
+}
+
+function mostrarMensajeCarga(tipo) {
+    const alerta = document.createElement('div');
+    alerta.id = 'alerta-exportacion';
+    alerta.className = 'alert alert-info alert-dismissible fade show position-fixed';
+    alerta.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alerta.innerHTML = `
+        <i class="bi bi-cloud-download"></i> Generando ${tipo}...
+        <div class="progress mt-2" style="height: 5px;">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 100%"></div>
+        </div>
+    `;
+    document.body.appendChild(alerta);
+}
+
+function removerMensajeCarga() {
+    const alerta = document.getElementById('alerta-exportacion');
+    if (alerta) alerta.remove();
+}
+
+function mostrarMensajeExito(tipo) {
+    const alerta = document.createElement('div');
+    alerta.className = 'alert alert-success alert-dismissible fade show position-fixed';
+    alerta.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alerta.innerHTML = `
+        <i class="bi bi-check-circle"></i> ${tipo} generado exitosamente
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alerta);
+    
+    setTimeout(() => { if (alerta.parentNode) alerta.remove(); }, 5000);
 }
 </script>
 

@@ -23,7 +23,7 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/admin/";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control | Albus S.R.L.</title>
+    <title>Panel de Control | Albus S.A.</title>
     
     <!-- URL Base para todos los enlaces relativos -->
     <base href="<?php echo $base_url; ?>">
@@ -125,7 +125,7 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/admin/";
 <nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #212529;">
     <div class="container-fluid">
         <a class="navbar-brand" href="index_admin.php">
-            <i class="bi bi-box-seam"></i> Albus S.R.L. - Administración
+            <i class="bi bi-box-seam"></i> Albus S.A. - Administración
         </a>
 
         <!-- Botón toggle para móviles -->
@@ -196,14 +196,6 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/admin/";
                         <li>
                             <a class="dropdown-item" href="navbar_usuarios/cambiar_password.php">
                                 <i class="bi bi-shield-lock me-2"></i>Cambiar Contraseña
-                            </a>
-                        </li>
-                        
-                        <!-- Cambiar de usuario -->
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item" href="navbar_usuarios/cambiar_usuario.php">
-                                <i class="bi bi-arrow-left-right me-2"></i>Cambiar de Usuario
                             </a>
                         </li>
                         
