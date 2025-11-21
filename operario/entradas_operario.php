@@ -55,6 +55,8 @@ $entradas_result = $conn->query($sql_entradas);
             switch($error) {
                 case '1': echo "Error al registrar la entrada"; break;
                 case '2': echo "Error: Campos vacíos"; break;
+                case '3': echo "Error: La cantidad no puede exceder 10,000 unidades"; break;
+                case '4': echo "Error: El stock total no puede exceder 10,000 unidades"; break;
                 default: echo "Error en la operación";
             }
             ?>
@@ -70,7 +72,7 @@ $entradas_result = $conn->query($sql_entradas);
                     <i class="bi bi-plus-circle"></i> Nueva Entrada
                 </div>
                 <div class="card-body">
-                    <form action="funcionalidad_entradas/registrar_entrada.php" method="POST">
+                    <form action="funcionalidad_entradas/registrar_entrada.php" method="POST" onsubmit="return validarEntrada()">
                         <div class="mb-3">
                             <label class="form-label">Producto <span class="text-danger">*</span>:</label>
                             <select class="form-select" name="id_producto" required id="selectProducto" onchange="actualizarInfoProducto()">
@@ -109,7 +111,12 @@ $entradas_result = $conn->query($sql_entradas);
 
                         <div class="mb-3">
                             <label class="form-label">Cantidad <span class="text-danger">*</span>:</label>
-                            <input type="number" class="form-control" name="cantidad" required min="1" placeholder="Cantidad a ingresar" id="inputCantidad">
+                            <input type="number" class="form-control" name="cantidad" required min="1" max="10000" 
+                                   placeholder="Cantidad a ingresar" id="inputCantidad" onchange="validarCantidadEntrada()">
+                            <small class="text-muted">Máximo permitido: 10,000 unidades por entrada</small>
+                            <div class="invalid-feedback" id="errorCantidad">
+                                La cantidad no puede exceder 10,000 unidades
+                            </div>
                         </div>
 
                         <div class="mb-3">
@@ -130,10 +137,19 @@ $entradas_result = $conn->query($sql_entradas);
                             <textarea class="form-control" name="observaciones" rows="3" placeholder="Detalles adicionales de la entrada..." maxlength="100"></textarea>
                         </div>
 
+                        <div class="alert alert-warning" id="alertaStock" style="display: none;">
+                            <small>
+                                <i class="bi bi-exclamation-triangle"></i> 
+                                <strong>Advertencia:</strong> El stock total después de esta entrada excederá el límite de 10,000 unidades.
+                            </small>
+                        </div>
+
                         <div class="alert alert-info">
                             <small>
                                 <i class="bi bi-info-circle"></i> 
-                                <strong>Nota:</strong> El stock se actualizará automáticamente después de registrar la entrada.
+                                <strong>Límites establecidos:</strong><br>
+                                • Máximo 10,000 unidades por entrada<br>
+                                • Stock total no puede exceder 10,000 unidades
                             </small>
                         </div>
 
@@ -193,8 +209,6 @@ $entradas_result = $conn->query($sql_entradas);
                             <p class="mt-2">No hay entradas registradas recientemente.</p>
                         </div>
                     <?php endif; ?>
-                    
-                    <!-- BOTÓN ELIMINADO -->
                 </div>
             </div>
         </div>
@@ -269,6 +283,65 @@ function actualizarInfoProducto() {
             </small>`;
         infoElement.className = 'alert alert-light border';
     }
+}
+
+function validarCantidadEntrada() {
+    const cantidadInput = document.getElementById('inputCantidad');
+    const cantidad = parseInt(cantidadInput.value) || 0;
+    const selectProducto = document.getElementById('selectProducto');
+    const selectedOption = selectProducto.options[selectProducto.selectedIndex];
+    const alertaStock = document.getElementById('alertaStock');
+    
+    // Validar cantidad máxima por entrada
+    if (cantidad > 10000) {
+        cantidadInput.classList.add('is-invalid');
+        return false;
+    } else {
+        cantidadInput.classList.remove('is-invalid');
+    }
+    
+    // Validar stock total después de la entrada
+    if (selectedOption && selectedOption.value) {
+        const stockActual = parseInt(selectedOption.getAttribute('data-stock')) || 0;
+        const stockTotal = stockActual + cantidad;
+        
+        if (stockTotal > 10000) {
+            alertaStock.style.display = 'block';
+            return false;
+        } else {
+            alertaStock.style.display = 'none';
+        }
+    }
+    
+    return true;
+}
+
+function validarEntrada() {
+    const cantidadInput = document.getElementById('inputCantidad');
+    const cantidad = parseInt(cantidadInput.value) || 0;
+    const selectProducto = document.getElementById('selectProducto');
+    const selectedOption = selectProducto.options[selectProducto.selectedIndex];
+    
+    // Validar cantidad máxima por entrada
+    if (cantidad > 10000) {
+        alert('Error: La cantidad no puede exceder 10,000 unidades por entrada');
+        cantidadInput.focus();
+        return false;
+    }
+    
+    // Validar stock total después de la entrada
+    if (selectedOption && selectedOption.value) {
+        const stockActual = parseInt(selectedOption.getAttribute('data-stock')) || 0;
+        const stockTotal = stockActual + cantidad;
+        
+        if (stockTotal > 10000) {
+            alert('Error: El stock total no puede exceder 10,000 unidades. Stock actual: ' + stockActual + ' + entrada: ' + cantidad + ' = ' + stockTotal);
+            cantidadInput.focus();
+            return false;
+        }
+    }
+    
+    return true;
 }
 
 // Inicializar la información al cargar la página

@@ -56,6 +56,7 @@ $salidas_result = $conn->query($sql_salidas);
                 case '1': echo "Error al registrar la salida"; break;
                 case '2': echo "Error: Campos vacíos"; break;
                 case '3': echo "Error: Stock insuficiente"; break;
+                case '4': echo "Error: La cantidad no puede exceder 10,000 unidades"; break;
                 default: echo "Error en la operación";
             }
             ?>
@@ -71,7 +72,7 @@ $salidas_result = $conn->query($sql_salidas);
                     <i class="bi bi-dash-circle"></i> Nueva Salida
                 </div>
                 <div class="card-body">
-                    <form action="funcionalidad_salidas/registrar_salida.php" method="POST" id="formSalida">
+                    <form action="funcionalidad_salidas/registrar_salida.php" method="POST" onsubmit="return validarSalida()">
                         <div class="mb-3">
                             <label class="form-label">Producto <span class="text-danger">*</span>:</label>
                             <select class="form-select" name="id_producto" required id="selectProducto" onchange="actualizarInfoProducto()">
@@ -110,10 +111,14 @@ $salidas_result = $conn->query($sql_salidas);
 
                         <div class="mb-3">
                             <label class="form-label">Cantidad <span class="text-danger">*</span>:</label>
-                            <input type="number" class="form-control" name="cantidad" required min="1" 
-                                   placeholder="Cantidad a retirar" id="inputCantidad" onkeyup="validarStock()">
+                            <input type="number" class="form-control" name="cantidad" required min="1" max="10000"
+                                   placeholder="Cantidad a retirar" id="inputCantidad" onkeyup="validarStock()" onchange="validarCantidadSalida()">
+                            <small class="text-muted">Máximo permitido: 10,000 unidades por salida</small>
                             <div class="mt-1">
                                 <small id="mensajeStock" class="text-muted"></small>
+                            </div>
+                            <div class="invalid-feedback" id="errorCantidad">
+                                La cantidad no puede exceder 10,000 unidades
                             </div>
                         </div>
 
@@ -136,10 +141,19 @@ $salidas_result = $conn->query($sql_salidas);
                             <textarea class="form-control" name="observaciones" rows="3" placeholder="Detalles adicionales de la salida..." maxlength="100"></textarea>
                         </div>
 
-                        <div class="alert alert-warning">
+                        <div class="alert alert-warning" id="alertaStock" style="display: none;">
                             <small>
                                 <i class="bi bi-exclamation-triangle"></i> 
-                                <strong>Advertencia:</strong> Verifica que el stock sea suficiente antes de registrar la salida.
+                                <strong>Advertencia:</strong> La cantidad solicitada supera el stock disponible.
+                            </small>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="bi bi-info-circle"></i> 
+                                <strong>Límites establecidos:</strong><br>
+                                • Máximo 10,000 unidades por salida<br>
+                                • No puede exceder el stock disponible
                             </small>
                         </div>
 
@@ -199,8 +213,6 @@ $salidas_result = $conn->query($sql_salidas);
                             <p class="mt-2">No hay salidas registradas recientemente.</p>
                         </div>
                     <?php endif; ?>
-                    
-                    <!-- BOTÓN ELIMINADO -->
                 </div>
             </div>
         </div>
@@ -281,42 +293,83 @@ function actualizarInfoProducto() {
     }
 }
 
+function validarCantidadSalida() {
+    const cantidadInput = document.getElementById('inputCantidad');
+    const cantidad = parseInt(cantidadInput.value) || 0;
+    
+    // Validar cantidad máxima por salida
+    if (cantidad > 10000) {
+        cantidadInput.classList.add('is-invalid');
+        return false;
+    } else {
+        cantidadInput.classList.remove('is-invalid');
+    }
+    
+    return true;
+}
+
 function validarStock() {
     const cantidadInput = document.getElementById('inputCantidad');
     const mensajeElement = document.getElementById('mensajeStock');
     const btnRegistrar = document.getElementById('btnRegistrar');
+    const alertaStock = document.getElementById('alertaStock');
     const cantidad = parseInt(cantidadInput.value) || 0;
     
-    if (cantidad > stockActual) {
+    // Validar cantidad máxima
+    if (cantidad > 10000) {
+        mensajeElement.textContent = `❌ Máximo 10,000 unidades por salida`;
+        mensajeElement.className = 'text-danger';
+        btnRegistrar.disabled = true;
+        cantidadInput.classList.add('is-invalid');
+        alertaStock.style.display = 'block';
+    }
+    // Validar stock disponible
+    else if (cantidad > stockActual) {
         mensajeElement.textContent = `❌ Stock insuficiente. Disponible: ${stockActual}`;
         mensajeElement.className = 'text-danger';
         btnRegistrar.disabled = true;
         cantidadInput.classList.add('is-invalid');
-    } else if (cantidad > 0) {
+        alertaStock.style.display = 'block';
+    } 
+    else if (cantidad > 0) {
         mensajeElement.textContent = `✅ Stock disponible: ${stockActual}`;
         mensajeElement.className = 'text-success';
         btnRegistrar.disabled = false;
         cantidadInput.classList.remove('is-invalid');
+        alertaStock.style.display = 'none';
     } else {
         mensajeElement.textContent = 'Ingrese la cantidad a retirar';
         mensajeElement.className = 'text-muted';
         btnRegistrar.disabled = false;
         cantidadInput.classList.remove('is-invalid');
+        alertaStock.style.display = 'none';
     }
+}
+
+function validarSalida() {
+    const cantidadInput = document.getElementById('inputCantidad');
+    const cantidad = parseInt(cantidadInput.value) || 0;
+    
+    // Validar cantidad máxima por salida
+    if (cantidad > 10000) {
+        alert('Error: La cantidad no puede exceder 10,000 unidades por salida');
+        cantidadInput.focus();
+        return false;
+    }
+    
+    // Validar stock disponible
+    if (cantidad > stockActual) {
+        alert('Error: Stock insuficiente. Disponible: ' + stockActual + ' unidades');
+        cantidadInput.focus();
+        return false;
+    }
+    
+    return true;
 }
 
 // Inicializar la información al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     actualizarInfoProducto();
-});
-
-// Validar formulario antes de enviar
-document.getElementById('formSalida').addEventListener('submit', function(e) {
-    const cantidad = parseInt(document.getElementById('inputCantidad').value) || 0;
-    if (cantidad > stockActual) {
-        e.preventDefault();
-        alert('Error: La cantidad solicitada supera el stock disponible.');
-    }
 });
 </script>
 

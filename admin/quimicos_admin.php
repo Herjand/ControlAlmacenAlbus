@@ -47,6 +47,9 @@ $result = $conn->query($sql);
                 case '3': echo "Error al eliminar el producto químico"; break;
                 case '4': echo "No se puede eliminar: Producto tiene movimientos registrados"; break;
                 case '5': echo "Error: Ya existe un producto químico con ese nombre"; break;
+                case '6': echo "Error: Stock inicial excede el límite máximo (10,000 unidades)"; break;
+                case '7': echo "Error: Stock mínimo excede el límite máximo (10,000 unidades)"; break;
+                case '8': echo "Error: Stock mínimo no puede ser mayor que stock inicial"; break;
                 default: echo "Error en la operación";
             }
             ?>
@@ -216,7 +219,7 @@ $result = $conn->query($sql);
 <div class="modal fade" id="nuevoQuimicoModal" tabindex="-1" aria-labelledby="nuevoQuimicoLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="funcionalidad_quimicos/registrar_quimico.php" method="POST">
+      <form action="funcionalidad_quimicos/registrar_quimico.php" method="POST" onsubmit="return validarStockQuimico()">
         <div class="modal-header bg-primary text-white">
           <h5 class="modal-title" id="nuevoQuimicoLabel"><i class="bi bi-plus-circle"></i> Nuevo Producto Químico</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -246,26 +249,25 @@ $result = $conn->query($sql);
             <div class="col-md-6">
               <div class="mb-3">
                 <label class="form-label">Stock Inicial:</label>
-                <input type="number" class="form-control" name="stock" value="0" min="0" required>
-                <small class="text-muted">Cantidad en unidades en inventario</small>
+                <input type="number" class="form-control" name="stock" id="stockInicial" value="0" min="0" max="10000" required>
+                <small class="text-muted">Cantidad en unidades en inventario (Máximo: 10,000)</small>
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
                 <label class="form-label">Stock Mínimo:</label>
-                <input type="number" class="form-control" name="stock_minimo" value="10" min="1" required>
-                <small class="text-muted">Alerta cuando el stock sea menor</small>
+                <input type="number" class="form-control" name="stock_minimo" id="stockMinimo" value="10" min="1" max="10000" required>
+                <small class="text-muted">Alerta cuando el stock sea menor (Máximo: 10,000)</small>
               </div>
             </div>
           </div>
 
           <div class="alert alert-info">
             <small>
-              <strong>📝 Ejemplos según tu inventario:</strong><br>
-              • <strong>SODA CAUSTICA:</strong> Stock: 200 unidades | Mínimo: 50 unidades<br>
-              • <strong>CARBONATO DE SODIO:</strong> Stock: 50 unidades | Mínimo: 20 unidades<br>
-              • <strong>AGUA OXIGENADA:</strong> Stock: 130 unidades | Mínimo: 40 unidades<br>
-              • <strong>ACIDO FORMICO:</strong> Stock: 75 unidades | Mínimo: 25 unidades
+              <strong>📝 Límites establecidos:</strong><br>
+              • <strong>Stock Inicial:</strong> Máximo 10,000 unidades<br>
+              • <strong>Stock Mínimo:</strong> Máximo 10,000 unidades<br>
+              • <strong>Relación:</strong> Stock mínimo debe ser menor o igual al stock inicial
             </small>
           </div>
         </div>
@@ -286,7 +288,7 @@ $result = $conn->query($sql);
 <div class="modal fade" id="editarQuimicoModal" tabindex="-1" aria-labelledby="editarQuimicoLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
-      <form action="funcionalidad_quimicos/editar_quimico.php" method="POST">
+      <form action="funcionalidad_quimicos/editar_quimico.php" method="POST" onsubmit="return validarStockEdicionQuimico()">
         <div class="modal-header bg-warning text-dark">
           <h5 class="modal-title" id="editarQuimicoLabel"><i class="bi bi-pencil-square"></i> Editar Producto Químico</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -302,13 +304,15 @@ $result = $conn->query($sql);
             <div class="col-md-6">
               <div class="mb-3">
                 <label class="form-label">Stock Actual:</label>
-                <input type="number" class="form-control" name="stock" id="edit_stock" min="0" required>
+                <input type="number" class="form-control" name="stock" id="edit_stock" min="0" max="10000" required>
+                <small class="text-muted">Máximo: 10,000 unidades</small>
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
                 <label class="form-label">Stock Mínimo:</label>
-                <input type="number" class="form-control" name="stock_minimo" id="edit_stockmin" min="1" required>
+                <input type="number" class="form-control" name="stock_minimo" id="edit_stockmin" min="1" max="10000" required>
+                <small class="text-muted">Máximo: 10,000 unidades</small>
               </div>
             </div>
           </div>
@@ -371,6 +375,51 @@ function actualizarCamposQuimico() {
         nombrePersonalizado.required = false;
         nombrePersonalizado.value = '';
     }
+}
+
+// Validaciones de stock para productos químicos
+function validarStockQuimico() {
+    const stockInicial = parseInt(document.getElementById('stockInicial').value) || 0;
+    const stockMinimo = parseInt(document.getElementById('stockMinimo').value) || 0;
+    
+    if (stockInicial > 10000) {
+        alert('Error: El stock inicial no puede exceder 10,000 unidades');
+        return false;
+    }
+    
+    if (stockMinimo > 10000) {
+        alert('Error: El stock mínimo no puede exceder 10,000 unidades');
+        return false;
+    }
+    
+    if (stockMinimo > stockInicial) {
+        alert('Error: El stock mínimo no puede ser mayor que el stock inicial');
+        return false;
+    }
+    
+    return true;
+}
+
+function validarStockEdicionQuimico() {
+    const stockActual = parseInt(document.getElementById('edit_stock').value) || 0;
+    const stockMinimo = parseInt(document.getElementById('edit_stockmin').value) || 0;
+    
+    if (stockActual > 10000) {
+        alert('Error: El stock actual no puede exceder 10,000 unidades');
+        return false;
+    }
+    
+    if (stockMinimo > 10000) {
+        alert('Error: El stock mínimo no puede exceder 10,000 unidades');
+        return false;
+    }
+    
+    if (stockMinimo > stockActual) {
+        alert('Error: El stock mínimo no puede ser mayor que el stock actual');
+        return false;
+    }
+    
+    return true;
 }
 </script>
 
