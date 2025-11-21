@@ -9,7 +9,7 @@ include '../../connect.php';
 
 // Obtener datos del usuario actual
 $usuario_id = $_SESSION['usuario_id'];
-$sql = "SELECT * FROM usuarios WHERE id_usuario = ?";
+$sql = "SELECT nombre, correo, rol, created_at, updated_at FROM usuarios WHERE id_usuario = ?";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("i", $usuario_id);
 $stmt->execute();
@@ -21,7 +21,8 @@ if ($result->num_rows === 0) {
     exit();
 }
 
-$usuario = $result->fetch_assoc();
+// Usar nombre de variable diferente para evitar conflictos
+$datos_usuario = $result->fetch_assoc();
 
 // Incluir header
 include '../header_admin.php';
@@ -42,13 +43,13 @@ include '../header_admin.php';
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Nombre:</label>
-                                <p class="form-control-plaintext"><?php echo htmlspecialchars($usuario['nombre'] ?? 'No disponible'); ?></p>
+                                <p class="form-control-plaintext"><?php echo htmlspecialchars($datos_usuario['nombre'] ?? 'No disponible'); ?></p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Correo Electrónico:</label>
-                                <p class="form-control-plaintext"><?php echo htmlspecialchars($usuario['correo'] ?? 'No disponible'); ?></p>
+                                <p class="form-control-plaintext"><?php echo htmlspecialchars($datos_usuario['correo'] ?? 'No disponible'); ?></p>
                             </div>
                         </div>
                     </div>
@@ -58,8 +59,8 @@ include '../header_admin.php';
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Rol:</label>
                                 <p class="form-control-plaintext">
-                                    <span class="badge bg-<?php echo ($usuario['rol'] ?? '') == 'Administrador' ? 'primary' : 'success'; ?>">
-                                        <?php echo htmlspecialchars($usuario['rol'] ?? 'No disponible'); ?>
+                                    <span class="badge bg-<?php echo ($datos_usuario['rol'] ?? '') == 'Administrador' ? 'primary' : 'success'; ?>">
+                                        <?php echo htmlspecialchars($datos_usuario['rol'] ?? 'No disponible'); ?>
                                     </span>
                                 </p>
                             </div>
@@ -67,7 +68,7 @@ include '../header_admin.php';
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Fecha de Registro:</label>
-                                <p class="form-control-plaintext"><?php echo isset($usuario['created_at']) ? date('d/m/Y H:i', strtotime($usuario['created_at'])) : 'No disponible'; ?></p>
+                                <p class="form-control-plaintext"><?php echo isset($datos_usuario['created_at']) ? date('d/m/Y H:i', strtotime($datos_usuario['created_at'])) : 'No disponible'; ?></p>
                             </div>
                         </div>
                     </div>
@@ -76,7 +77,7 @@ include '../header_admin.php';
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Última Actualización:</label>
-                                <p class="form-control-plaintext"><?php echo isset($usuario['updated_at']) ? date('d/m/Y H:i', strtotime($usuario['updated_at'])) : 'No disponible'; ?></p>
+                                <p class="form-control-plaintext"><?php echo isset($datos_usuario['updated_at']) ? date('d/m/Y H:i', strtotime($datos_usuario['updated_at'])) : 'No disponible'; ?></p>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -101,12 +102,12 @@ include '../header_admin.php';
                     <div class="mb-4">
                         <i class="bi bi-person-circle" style="font-size: 80px; color: #6c757d;"></i>
                     </div>
-                    <h5><?php echo htmlspecialchars($usuario['nombre'] ?? 'Usuario'); ?></h5>
-                    <p class="text-muted"><?php echo htmlspecialchars($usuario['rol'] ?? 'Rol no definido'); ?></p>
+                    <h5><?php echo htmlspecialchars($datos_usuario['nombre'] ?? 'Usuario'); ?></h5>
+                    <p class="text-muted"><?php echo htmlspecialchars($datos_usuario['rol'] ?? 'Rol no definido'); ?></p>
                     
                     <div class="mt-4">
                         <small class="text-muted">
-                            Miembro desde <?php echo isset($usuario['created_at']) ? date('M Y', strtotime($usuario['created_at'])) : 'Fecha no disponible'; ?>
+                            Miembro desde <?php echo isset($datos_usuario['created_at']) ? date('M Y', strtotime($datos_usuario['created_at'])) : 'Fecha no disponible'; ?>
                         </small>
                     </div>
                 </div>

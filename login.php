@@ -28,9 +28,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['usuario_nombre'] = $usuario['nombre'];
             $_SESSION['usuario_rol'] = $usuario['rol'];
             
-            // Redirigir según el rol
+            // Redirigir según el rol - CORREGIDO
             if ($usuario['rol'] == 'Administrador') {
                 header("Location: admin/index_admin.php");
+            } elseif ($usuario['rol'] == 'Jefe de Producción') {
+                header("Location: jefeprod/index_jefe_produccion.php");
             } else {
                 header("Location: operario/index_operario.php");
             }
@@ -49,8 +51,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | Albus S.R.L.</title>
+    <title>Login | Albus S.A.</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -77,6 +80,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         .register-link:hover {
             text-decoration: underline;
         }
+        .role-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.85em;
+        }
+        .role-info h6 {
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        .role-badge {
+            font-size: 0.75em;
+            margin-right: 5px;
+        }
     </style>
 </head>
 <body>
@@ -84,8 +102,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <div class="row justify-content-center">
             <div class="col-md-4">
                 <div class="login-card p-4">
+                    <!-- Botón Volver al Index -->
+                    <div class="mb-3">
+                        <a href="index.php" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-arrow-left"></i> Volver al Inicio
+                        </a>
+                    </div>
+                    
                     <div class="text-center mb-4">
-                        <h2><i class="bi bi-box-seam"></i> Albus S.R.L.</h2>
+                        <h2><i class="bi bi-box-seam"></i> Albus S.A.</h2>
                         <p class="text-muted">Sistema de Gestión de Almacén</p>
                     </div>
                     
@@ -96,11 +121,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <form method="POST">
                         <div class="mb-3">
                             <label class="form-label">Correo electrónico</label>
-                            <input type="email" class="form-control" name="correo" required>
+                            <input type="email" class="form-control" name="correo" required 
+                                   placeholder="usuario@albus.com">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" name="contrasena" required>
+                            <input type="password" class="form-control" name="contrasena" required 
+                                   placeholder="Ingresa tu contraseña">
                         </div>
                         
                         <!-- Enlace ¿Olvidaste tu contraseña? -->
@@ -110,7 +137,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </a>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary w-100">Iniciar Sesión</button>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesión
+                        </button>
                         
                         <!-- Enlace ¿No tienes cuenta? Regístrate -->
                         <div class="mt-3 text-center">
@@ -119,17 +148,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             </a>
                         </div>
                     </form>
-                    
-                    <div class="mt-3 text-center">
-                        <small class="text-muted">
-                            <strong>Demo:</strong><br>
-                            Admin: admin@albus.com / admin123<br>
-                            Operario: operario1@albus.com / operario123
-                        </small>
+
+                    <!-- Información de usuarios de prueba -->
+                    <div class="role-info mt-4">
+                        <h6><i class="bi bi-info-circle"></i> Usuarios de Prueba:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-primary role-badge">Admin</span>
+                            <small>admin@albus.com / admin123</small>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mt-1">
+                            <span class="badge bg-warning role-badge">Jefe Producción</span>
+                            <small>jefeprod@albus.com / jefeprod123</small>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mt-1">
+                            <span class="badge bg-success role-badge">Operario</span>
+                            <small>operario1@albus.com / operario123</small>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

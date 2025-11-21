@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-include '../header_admin.php';
+include '../header_jefe_produccion.php';
 ?>
 
 <div class="container-fluid">
@@ -123,7 +123,8 @@ include '../header_admin.php';
                             <button type="submit" class="btn btn-success">
                                 <i class="bi bi-check-circle"></i> Guardar Cambios
                             </button>
-                            <a href="/ControlAlmacenAlbus/admin/navbar_usuarios/mi_perfil.php" class="btn btn-secondary">
+                            <!-- CORREGIDO: Ruta relativa correcta -->
+                            <a href="../navbar_usuarios/mi_perfil.php" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Volver al Perfil
                             </a>
                         </div>

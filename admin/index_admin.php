@@ -19,6 +19,45 @@ $total_pedidos = $conn->query($sql_total_pedidos)->fetch_assoc()['total'];
 $pedidos_pendientes = $conn->query($sql_pedidos_pendientes)->fetch_assoc()['total'];
 $stock_bajo = $conn->query($sql_stock_bajo)->fetch_assoc()['total'];
 
+// Datos para el gráfico - Movimientos de las últimas 4 semanas
+$datos_grafico = array();
+$etiquetas_grafico = array();
+
+for ($i = 3; $i >= 0; $i--) {
+    $fecha_inicio = date('Y-m-d', strtotime("-$i weeks"));
+    $fecha_fin = date('Y-m-d', strtotime("-$i weeks +6 days"));
+    
+    // Entradas de la semana
+    $sql_entradas = "SELECT COUNT(*) as total FROM entradas 
+                    WHERE DATE(fecha) BETWEEN '$fecha_inicio' AND '$fecha_fin'";
+    $entradas = $conn->query($sql_entradas)->fetch_assoc()['total'];
+    
+    // Salidas de la semana
+    $sql_salidas = "SELECT COUNT(*) as total FROM salidas 
+                   WHERE DATE(fecha) BETWEEN '$fecha_inicio' AND '$fecha_fin'";
+    $salidas = $conn->query($sql_salidas)->fetch_assoc()['total'];
+    
+    $datos_grafico['entradas'][] = $entradas;
+    $datos_grafico['salidas'][] = $salidas;
+    $etiquetas_grafico[] = "Sem " . (4 - $i);
+}
+
+// Convertir datos a JSON para JavaScript
+$datos_entradas_json = json_encode($datos_grafico['entradas']);
+$datos_salidas_json = json_encode($datos_grafico['salidas']);
+$etiquetas_json = json_encode($etiquetas_grafico);
+
+// Estadísticas adicionales para el gráfico
+$sql_total_entradas_mes = "SELECT COUNT(*) as total FROM entradas 
+                          WHERE MONTH(fecha) = MONTH(CURRENT_DATE()) 
+                          AND YEAR(fecha) = YEAR(CURRENT_DATE())";
+$sql_total_salidas_mes = "SELECT COUNT(*) as total FROM salidas 
+                         WHERE MONTH(fecha) = MONTH(CURRENT_DATE()) 
+                         AND YEAR(fecha) = YEAR(CURRENT_DATE())";
+
+$total_entradas_mes = $conn->query($sql_total_entradas_mes)->fetch_assoc()['total'];
+$total_salidas_mes = $conn->query($sql_total_salidas_mes)->fetch_assoc()['total'];
+
 // Últimos pedidos
 $sql_ultimos_pedidos = "SELECT * FROM pedidos ORDER BY created_at DESC LIMIT 5";
 $ultimos_pedidos = $conn->query($sql_ultimos_pedidos);
@@ -111,42 +150,81 @@ $productos_bajo_stock = $conn->query($sql_productos_bajo_stock);
         </div>
     </div>
 
-    <!-- Gráfico y Acciones Rápidas -->
+    <!-- Gráfico y Estadísticas -->
     <div class="row">
         <!-- Gráfico de Movimientos -->
         <div class="col-xl-8 col-lg-7">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Movimientos del Mes</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Movimientos de las Últimas 4 Semanas</h6>
+                    <div class="dropdown no-arrow">
+                        <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink" 
+                           data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="bi bi-three-dots-vertical text-gray-400"></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in" 
+                             aria-labelledby="dropdownMenuLink">
+                            <div class="dropdown-header">Opciones del Gráfico:</div>
+                            <a class="dropdown-item" onclick="actualizarGrafico('line')">Gráfico de Líneas</a>
+                            <a class="dropdown-item" onclick="actualizarGrafico('bar')">Gráfico de Barras</a>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="chart-area">
                         <canvas id="movimientosChart" height="200"></canvas>
                     </div>
+                    <div class="mt-3 text-center small">
+                        <span class="mr-3">
+                            <i class="bi bi-circle-fill text-primary"></i> Entradas: <?php echo $total_entradas_mes; ?> este mes
+                        </span>
+                        <span>
+                            <i class="bi bi-circle-fill text-success"></i> Salidas: <?php echo $total_salidas_mes; ?> este mes
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Acciones Rápidas -->
+        <!-- Estadísticas Rápidas -->
         <div class="col-xl-4 col-lg-5">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Acciones Rápidas</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Resumen de Movimientos</h6>
                 </div>
                 <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="productos_admin.php" class="btn btn-primary btn-block">
-                            <i class="bi bi-plus-circle"></i> Nuevo Producto
-                        </a>
-                        <a href="pedidos_admin.php" class="btn btn-success btn-block">
-                            <i class="bi bi-cart-plus"></i> Nuevo Pedido
-                        </a>
-                        <a href="entradas_admin.php" class="btn btn-info btn-block">
-                            <i class="bi bi-arrow-down-square"></i> Registrar Entrada
-                        </a>
-                        <a href="despachos_admin.php" class="btn btn-warning btn-block">
-                            <i class="bi bi-truck"></i> Gestionar Despachos
-                        </a>
+                    <div class="mb-3">
+                        <h6 class="text-primary">Este Mes</h6>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="border-end">
+                                    <div class="h4 text-primary mb-0"><?php echo $total_entradas_mes; ?></div>
+                                    <small class="text-muted">Entradas</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="h4 text-success mb-0"><?php echo $total_salidas_mes; ?></div>
+                                <small class="text-muted">Salidas</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-success">Acciones Rápidas</h6>
+                        <div class="d-grid gap-2">
+                            <a href="productos_admin.php" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus-circle"></i> Nuevo Producto
+                            </a>
+                            <a href="pedidos_admin.php" class="btn btn-success btn-sm">
+                                <i class="bi bi-cart-plus"></i> Nuevo Pedido
+                            </a>
+                            <a href="entradas_admin.php" class="btn btn-info btn-sm">
+                                <i class="bi bi-arrow-down-square"></i> Registrar Entrada
+                            </a>
+                            <a href="despachos_admin.php" class="btn btn-warning btn-sm">
+                                <i class="bi bi-truck"></i> Gestionar Despachos
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -245,83 +323,98 @@ $productos_bajo_stock = $conn->query($sql_productos_bajo_stock);
             </div>
         </div>
     </div>
-
-    <!-- Información del Sistema -->
-    <div class="row mt-4">
-        <div class="col-12">
-            <div class="card shadow">
-                <div class="card-body">
-                    <div class="row text-center">
-                        <div class="col-md-3">
-                            <div class="border-end">
-                                <h5 class="text-primary">Sistema</h5>
-                                <p class="mb-0 small">Albus S.R.L.</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="border-end">
-                                <h5 class="text-success">Versión</h5>
-                                <p class="mb-0 small">v2.0</p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="border-end">
-                                <h5 class="text-info">Usuario</h5>
-                                <p class="mb-0 small"><?php echo $_SESSION['usuario_rol']; ?></p>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <h5 class="text-warning">Sesión</h5>
-                            <p class="mb-0 small">Activa</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-// Gráfico de movimientos
-const ctx = document.getElementById('movimientosChart').getContext('2d');
-new Chart(ctx, {
-    type: 'line',
-    data: {
-        labels: ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4'],
-        datasets: [{
-            label: 'Entradas',
-            data: [12, 19, 8, 15],
-            borderColor: '#0d6efd',
-            backgroundColor: 'rgba(13, 110, 253, 0.1)',
-            tension: 0.4,
-            fill: true
-        }, {
-            label: 'Salidas',
-            data: [8, 12, 6, 10],
-            borderColor: '#198754',
-            backgroundColor: 'rgba(25, 135, 84, 0.1)',
-            tension: 0.4,
-            fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: 'top',
-            },
-            title: {
-                display: true,
-                text: 'Movimientos Semanales'
-            }
+// Datos desde PHP
+const etiquetas = <?php echo $etiquetas_json; ?>;
+const datosEntradas = <?php echo $datos_entradas_json; ?>;
+const datosSalidas = <?php echo $datos_salidas_json; ?>;
+
+let movimientosChart;
+
+function inicializarGrafico(tipo = 'line') {
+    const ctx = document.getElementById('movimientosChart').getContext('2d');
+    
+    if (movimientosChart) {
+        movimientosChart.destroy();
+    }
+    
+    movimientosChart = new Chart(ctx, {
+        type: tipo,
+        data: {
+            labels: etiquetas,
+            datasets: [{
+                label: 'Entradas',
+                data: datosEntradas,
+                borderColor: '#0d6efd',
+                backgroundColor: tipo === 'line' ? 'rgba(13, 110, 253, 0.1)' : 'rgba(13, 110, 253, 0.8)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: tipo === 'line'
+            }, {
+                label: 'Salidas',
+                data: datosSalidas,
+                borderColor: '#198754',
+                backgroundColor: tipo === 'line' ? 'rgba(25, 135, 84, 0.1)' : 'rgba(25, 135, 84, 0.8)',
+                borderWidth: 2,
+                tension: 0.4,
+                fill: tipo === 'line'
+            }]
         },
-        scales: {
-            y: {
-                beginAtZero: true
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    },
+                    title: {
+                        display: true,
+                        text: 'Cantidad de Movimientos'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Semanas'
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'nearest'
             }
         }
+    });
+}
+
+function actualizarGrafico(tipo) {
+    inicializarGrafico(tipo);
+}
+
+// Inicializar el gráfico cuando la página cargue
+document.addEventListener('DOMContentLoaded', function() {
+    inicializarGrafico('line');
+});
+
+// Redimensionar gráfico cuando cambie el tamaño de la ventana
+window.addEventListener('resize', function() {
+    if (movimientosChart) {
+        movimientosChart.resize();
     }
 });
 </script>

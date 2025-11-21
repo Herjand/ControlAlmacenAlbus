@@ -50,6 +50,7 @@ $productos_result = $conn->query($sql_productos);
                 case '1': echo "Error al registrar la salida"; break;
                 case '2': echo "Error: Campos vacíos"; break;
                 case '3': echo "Error: Stock insuficiente"; break;
+                case '4': echo "Error: La cantidad no puede ser mayor a 1000 unidades"; break;
                 default: echo "Error en la operación";
             }
             ?>
@@ -101,7 +102,8 @@ $productos_result = $conn->query($sql_productos);
                     <div class="col-md-2">
                         <div class="mb-3">
                             <label class="form-label">Cantidad a retirar:</label>
-                            <input type="number" class="form-control" name="cantidad" required min="1" value="1" id="inputCantidad">
+                            <input type="number" class="form-control" name="cantidad" required min="1" max="1000" value="1" id="inputCantidad">
+                            <small class="text-muted">Máximo 1000 unidades por salida</small>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -195,25 +197,10 @@ document.addEventListener('DOMContentLoaded', function() {
     selectProducto.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const stockActual = parseInt(selectedOption.getAttribute('data-stock'));
-        const unidad = selectedOption.getAttribute('data-unidad');
         const especificaciones = selectedOption.getAttribute('data-especificaciones');
         
         if (stockActual !== null && selectedOption.value !== "") {
-            // Mapeo de unidades amigables
-            const unidades = {
-                'unidad': 'unidades',
-                'caja': 'cajas', 
-                'pack': 'packs',
-                'rollo': 'rollos',
-                'par': 'pares',
-                'gramo': 'gramos',
-                'kilogramo': 'kilogramos',
-                'metro': 'metros',
-                'centimetro': 'centímetros'
-            };
-            
-            const unidadDisplay = unidades[unidad] || unidad;
-            infoStock.textContent = `Stock actual: ${stockActual} ${unidadDisplay}`;
+            infoStock.textContent = `Stock actual: ${stockActual} unidades`;
             
             // Cambiar color según stock
             if (stockActual === 0) {
@@ -237,8 +224,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 infoEspecificaciones.className = 'text-muted';
             }
             
-            // Actualizar cantidad máxima
-            inputCantidad.setAttribute('max', stockActual);
+            // Actualizar cantidad máxima (el menor entre stock actual y 1000)
+            const maxPermitido = Math.min(stockActual, 1000);
+            inputCantidad.setAttribute('max', maxPermitido);
             
         } else {
             infoStock.textContent = '';
@@ -249,10 +237,19 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Validar cantidad en tiempo real
     inputCantidad.addEventListener('input', function() {
+        const cantidad = parseInt(this.value);
+        
+        // Validar límite de 1000
+        if (cantidad > 1000) {
+            this.value = 1000;
+            mostrarAlerta('La cantidad no puede ser mayor a 1000 unidades por salida', 'warning');
+            return;
+        }
+        
+        // Validar stock disponible
         const selectedOption = selectProducto.options[selectProducto.selectedIndex];
         if (selectedOption && selectedOption.value) {
             const stockActual = parseInt(selectedOption.getAttribute('data-stock'));
-            const cantidad = parseInt(this.value);
             
             if (cantidad > stockActual) {
                 this.classList.add('is-invalid');
@@ -266,21 +263,69 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Validar que no se retire más del stock disponible al enviar
+    // Validar formulario antes de enviar
     formSalida.addEventListener('submit', function(e) {
+        const cantidad = parseInt(inputCantidad.value);
         const selectedOption = selectProducto.options[selectProducto.selectedIndex];
+        
+        // Validar límite de 1000
+        if (cantidad > 1000) {
+            e.preventDefault();
+            mostrarAlerta('Error: La cantidad no puede ser mayor a 1000 unidades por salida', 'danger');
+            inputCantidad.focus();
+            inputCantidad.select();
+            return false;
+        }
+        
+        // Validar cantidad mínima
+        if (cantidad < 1) {
+            e.preventDefault();
+            mostrarAlerta('Error: La cantidad debe ser al menos 1 unidad', 'danger');
+            inputCantidad.focus();
+            return false;
+        }
+        
+        // Validar stock disponible
         if (selectedOption && selectedOption.value) {
             const stockActual = parseInt(selectedOption.getAttribute('data-stock'));
-            const cantidad = parseInt(inputCantidad.value);
             
             if (cantidad > stockActual) {
                 e.preventDefault();
-                alert(`❌ Error: No hay suficiente stock.\n\nStock disponible: ${stockActual}\nCantidad a retirar: ${cantidad}\n\nPor favor, ajuste la cantidad.`);
+                mostrarAlerta(`Error: No hay suficiente stock.\n\nStock disponible: ${stockActual}\nCantidad a retirar: ${cantidad}\n\nPor favor, ajuste la cantidad.`, 'danger');
                 inputCantidad.focus();
                 inputCantidad.select();
+                return false;
             }
         }
+        
+        return true;
     });
+    
+    // Función para mostrar alertas temporales
+    function mostrarAlerta(mensaje, tipo) {
+        // Remover alertas existentes
+        const alertasExistentes = document.querySelectorAll('.alert-temporario');
+        alertasExistentes.forEach(alerta => alerta.remove());
+        
+        // Crear nueva alerta
+        const alerta = document.createElement('div');
+        alerta.className = `alert alert-${tipo} alert-dismissible fade show alert-temporario`;
+        alerta.innerHTML = `
+            <i class="bi bi-exclamation-triangle-fill"></i> ${mensaje}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Insertar después del título
+        const titulo = document.querySelector('h2');
+        titulo.parentNode.insertBefore(alerta, titulo.nextSibling);
+        
+        // Auto-remover después de 5 segundos
+        setTimeout(() => {
+            if (alerta.parentNode) {
+                alerta.remove();
+            }
+        }, 5000);
+    }
     
     // Mostrar información inicial si hay un producto seleccionado
     if (selectProducto.value) {

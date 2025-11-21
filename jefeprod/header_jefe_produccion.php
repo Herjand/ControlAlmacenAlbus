@@ -1,7 +1,7 @@
 <?php
 // header_jefe_produccion.php
 session_start();
-if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] != 'Jefe de Producción') {
+if (!isset($_SESSION['usuario_id'])) {
     header("Location: ../login.php");
     exit();
 }
@@ -9,29 +9,28 @@ if (!isset($_SESSION['usuario_id']) || $_SESSION['usuario_rol'] != 'Jefe de Prod
 $usuario = $_SESSION['usuario_nombre'];
 $rol = $_SESSION['usuario_rol'];
 
-// Determinar la página actual para marcar como activa
+if ($rol !== 'Jefe de Producción') {
+    header("Location: ../acceso_denegado.php");
+    exit();
+}
+
 $current_page = basename($_SERVER['PHP_SELF']);
 
-// Calcular la URL base automáticamente
+// Calcular URL base
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
 $host = $_SERVER['HTTP_HOST'];
-$project_folder = 'ControlAlmacenAlbus'; // Cambia esto si tu proyecto está en subcarpeta
-$base_url = $protocol . "://" . $host . "/" . $project_folder . "/jefe_produccion/";
+$project_folder = 'ControlAlmacenAlbus';
+$base_url = $protocol . "://" . $host . "/" . $project_folder . "/jefeprod/";
+$navbar_url = $base_url . "navbar_usuarios/";
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Jefe Producción | Albus S.A.</title>
+    <title>Panel Jefe de Producción | Albus S.A.</title>
     
-    <!-- URL Base para todos los enlaces relativos -->
-    <base href="<?php echo $base_url; ?>">
-
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
@@ -41,7 +40,7 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/jefe_produccio
             padding: 0;
         }
         .navbar {
-            background-color: #27ae60;
+            background-color: #2c3e50;
             z-index: 1030;
             position: fixed;
             top: 0;
@@ -60,7 +59,7 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/jefe_produccio
         }
         .sidebar {
             height: calc(100vh - 56px);
-            background-color: #2ecc71;
+            background-color: #34495e;
             position: fixed;
             width: 250px;
             top: 56px;
@@ -76,24 +75,24 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/jefe_produccio
             font-size: 0.9rem;
         }
         .sidebar a:hover {
-            background-color: #229954;
-            border-left: 4px solid #145a32;
+            background-color: #3498db;
+            border-left: 4px solid #1abc9c;
         }
         .sidebar a.active {
-            background-color: #229954;
-            border-left: 4px solid #145a32;
+            background-color: #3498db;
+            border-left: 4px solid #1abc9c;
             font-weight: 500;
         }
         .sidebar-section {
-            color: #d5f5e3;
+            color: #bdc3c7;
             font-size: 0.8rem;
             font-weight: bold;
             text-transform: uppercase;
             padding: 12px 20px 5px 20px;
-            border-bottom: 1px solid #229954;
+            border-bottom: 1px solid #2c3e50;
         }
         .sidebar-divider {
-            border-top: 1px solid #229954;
+            border-top: 1px solid #2c3e50;
             margin: 10px 20px;
         }
         .content {
@@ -112,39 +111,35 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/jefe_produccio
             width: 6px;
         }
         .sidebar::-webkit-scrollbar-thumb {
-            background: #229954;
+            background: #7f8c8d;
             border-radius: 3px;
         }
         .sidebar::-webkit-scrollbar-thumb:hover {
-            background: #1e8449;
+            background: #95a5a6;
         }
         .badge-jefe {
-            background-color: #f39c12;
+            background-color: #e67e22;
             font-size: 0.7em;
         }
-        .alert-stock {
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
+        .jefe-highlight {
+            border-left: 4px solid #e67e22 !important;
         }
     </style>
 </head>
 <body>
 <!-- NAV SUPERIOR -->
-<nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #27ae60;">
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top" style="background-color: #2c3e50;">
     <div class="container-fluid">
-        <a class="navbar-brand" href="index_jefe_produccion.php">
-            <i class="bi bi-clipboard-data"></i> Albus S.A. - Jefe Producción
+        <a class="navbar-brand" href="<?php echo $base_url; ?>index_jefe_produccion.php">
+            <i class="bi bi-gear-fill"></i> Albus S.A. - Jefe de Producción
         </a>
 
-        <!-- Botón toggle para móviles -->
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarUserMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarUserMenu">
             <ul class="navbar-nav ms-auto">
-
-                <!-- Usuario -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-gear"></i> 
@@ -161,7 +156,7 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/jefe_produccio
                             <div class="dropdown-header">
                                 <div class="d-flex align-items-center">
                                     <div class="flex-shrink-0">
-                                        <i class="bi bi-person-badge fs-4 text-success"></i>
+                                        <i class="bi bi-person-gear fs-4 text-warning"></i>
                                     </div>
                                     <div class="flex-grow-1 ms-2">
                                         <h6 class="mb-0"><?php echo htmlspecialchars($usuario); ?></h6>
@@ -172,27 +167,27 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/jefe_produccio
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         
-                        <!-- Enlaces de perfil -->
+                        <!-- PERFIL COMPLETO COMO ESTABA -->
                         <li>
-                            <a class="dropdown-item" href="navbar_usuarios/mi_perfil.php">
+                            <a class="dropdown-item" href="<?php echo $navbar_url; ?>mi_perfil.php">
                                 <i class="bi bi-person me-2"></i>Mi Perfil
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="navbar_usuarios/editar_perfil.php">
+                            <a class="dropdown-item" href="<?php echo $navbar_url; ?>editar_perfil.php">
                                 <i class="bi bi-pencil-square me-2"></i>Editar Perfil
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="navbar_usuarios/cambiar_password.php">
+                            <a class="dropdown-item" href="<?php echo $navbar_url; ?>cambiar_password.php">
                                 <i class="bi bi-shield-lock me-2"></i>Cambiar Contraseña
                             </a>
                         </li>
-                        
+                                            
                         <!-- Cerrar sesión -->
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <a class="dropdown-item text-danger" href="navbar_usuarios/procesar_logout.php" onclick="return confirm('¿Estás seguro de que deseas cerrar sesión?');">
+                            <a class="dropdown-item text-danger" href="<?php echo $navbar_url; ?>procesar_logout.php" onclick="return confirm('¿Estás seguro de que deseas cerrar sesión?');">
                                 <i class="bi bi-box-arrow-right me-2"></i>Cerrar Sesión
                             </a>
                         </li>
@@ -203,74 +198,36 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/jefe_produccio
     </div>
 </nav>
 
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR SIMPLIFICADO SOLO PARA ENTRADAS, SALIDAS Y STOCK MÍNIMO -->
     <div class="sidebar">
-        <!-- ENLACE INICIO - PRIMER ELEMENTO -->
-        <a href="index_jefe_produccion.php" class="<?php echo ($current_page == 'index_jefe_produccion.php') ? 'active' : ''; ?>">
+        <!-- ENLACE INICIO -->
+        <a href="<?php echo $base_url; ?>index_jefe_produccion.php" class="<?php echo ($current_page == 'index_jefe_produccion.php') ? 'active jefe-highlight' : ''; ?>">
             <i class="bi bi-house-door"></i> Inicio
         </a>
 
-        <!-- SUPERVISIÓN Y CONTROL -->
+        <!-- GESTIÓN BÁSICA -->
         <div class="sidebar-section">
-            <i class="bi bi-eye"></i> SUPERVISIÓN
+            <i class="bi bi-clipboard-data"></i> GESTIÓN BÁSICA
         </div>
-        <a href="entradas_jefe.php" class="<?php echo ($current_page == 'entradas_jefe.php') ? 'active' : ''; ?>">
-            <i class="bi bi-arrow-down-square"></i> Control Entradas
+        <a href="<?php echo $base_url; ?>gestion_entradas.php" class="<?php echo ($current_page == 'gestion_entradas.php') ? 'active jefe-highlight' : ''; ?>">
+            <i class="bi bi-arrow-down-square"></i> Gestionar Entradas
         </a>
-        <a href="salidas_jefe.php" class="<?php echo ($current_page == 'salidas_jefe.php') ? 'active' : ''; ?>">
-            <i class="bi bi-arrow-up-square"></i> Control Salidas
+        <a href="<?php echo $base_url; ?>gestion_salidas.php" class="<?php echo ($current_page == 'gestion_salidas.php') ? 'active jefe-highlight' : ''; ?>">
+            <i class="bi bi-arrow-up-square"></i> Gestionar Salidas
         </a>
-        <a href="movimientos_jefe.php" class="<?php echo ($current_page == 'movimientos_jefe.php') ? 'active' : ''; ?>">
-            <i class="bi bi-arrow-left-right"></i> Movimientos Totales
+        <a href="<?php echo $base_url; ?>ajustar_stock_minimo.php" class="<?php echo ($current_page == 'ajustar_stock_minimo.php') ? 'active jefe-highlight' : ''; ?>">
+            <i class="bi bi-sliders"></i> Ajustar Stock Mínimo
         </a>
 
-        <!-- STOCK Y SEGURIDAD -->
+        <!-- CONSULTAS BÁSICAS -->
         <div class="sidebar-section">
-            <i class="bi bi-shield-check"></i> STOCK SEGURO
+            <i class="bi bi-search"></i> CONSULTAS
         </div>
-        <a href="stock_seguridad.php" class="<?php echo ($current_page == 'stock_seguridad.php') ? 'active' : ''; ?>">
-            <i class="bi bi-graph-up-arrow"></i> Stock de Seguridad
+        <a href="<?php echo $base_url; ?>stock_completo.php" class="<?php echo ($current_page == 'stock_completo.php') ? 'active jefe-highlight' : ''; ?>">
+            <i class="bi bi-boxes"></i> Ver Stock
         </a>
-        <a href="alertas_stock.php" class="<?php echo ($current_page == 'alertas_stock.php') ? 'active' : ''; ?>">
-            <i class="bi bi-exclamation-triangle"></i> Alertas Stock
-        </a>
-        <a href="productos_jefe.php" class="<?php echo ($current_page == 'productos_jefe.php') ? 'active' : ''; ?>">
-            <i class="bi bi-box-seam"></i> Catálogo Productos
-        </a>
-
-        <!-- PEDIDOS Y PRODUCCIÓN -->
-        <div class="sidebar-section">
-            <i class="bi bi-clipboard-check"></i> PRODUCCIÓN
-        </div>
-        <a href="pedidos_jefe.php" class="<?php echo ($current_page == 'pedidos_jefe.php') ? 'active' : ''; ?>">
-            <i class="bi bi-list-check"></i> Estado Pedidos
-        </a>
-        <a href="planificacion_produccion.php" class="<?php echo ($current_page == 'planificacion_produccion.php') ? 'active' : ''; ?>">
-            <i class="bi bi-calendar-check"></i> Planificación
-        </a>
-
-        <!-- REPORTES Y ANÁLISIS -->
-        <div class="sidebar-section">
-            <i class="bi bi-bar-chart"></i> REPORTES
-        </div>
-        <a href="reportes_entradas_salidas.php" class="<?php echo ($current_page == 'reportes_entradas_salidas.php') ? 'active' : ''; ?>">
-            <i class="bi bi-file-earmark-text"></i> Entradas/Salidas
-        </a>
-        <a href="reportes_stock.php" class="<?php echo ($current_page == 'reportes_stock.php') ? 'active' : ''; ?>">
-            <i class="bi bi-graph-up"></i> Análisis Stock
-        </a>
-        <a href="reportes_eficiencia.php" class="<?php echo ($current_page == 'reportes_eficiencia.php') ? 'active' : ''; ?>">
-            <i class="bi bi-speedometer2"></i> Eficiencia
-        </a>
-
-        <div class="sidebar-divider"></div>
-
-        <!-- CONFIGURACIÓN -->
-        <div class="sidebar-section">
-            <i class="bi bi-gear"></i> CONFIGURACIÓN
-        </div>
-        <a href="configuracion_stock.php" class="<?php echo ($current_page == 'configuracion_stock.php') ? 'active' : ''; ?>">
-            <i class="bi bi-sliders"></i> Stock Mínimo
+        <a href="<?php echo $base_url; ?>movimientos_totales.php" class="<?php echo ($current_page == 'movimientos_totales.php') ? 'active jefe-highlight' : ''; ?>">
+            <i class="bi bi-list-check"></i> Ver Movimientos
         </a>
     </div>
 

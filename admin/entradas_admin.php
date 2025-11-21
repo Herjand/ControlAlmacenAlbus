@@ -49,6 +49,7 @@ $productos_result = $conn->query($sql_productos);
             switch($error) {
                 case '1': echo "Error al registrar la entrada"; break;
                 case '2': echo "Error: Campos vacíos"; break;
+                case '3': echo "Error: La cantidad no puede ser mayor a 1000 unidades"; break;
                 default: echo "Error en la operación";
             }
             ?>
@@ -62,7 +63,7 @@ $productos_result = $conn->query($sql_productos);
             <i class="bi bi-plus-circle"></i> Nueva Entrada de Productos
         </div>
         <div class="card-body">
-            <form action="funcionalidad_entradas/registrar_entrada.php" method="POST">
+            <form action="funcionalidad_entradas/registrar_entrada.php" method="POST" id="formEntrada">
                 <div class="row">
                     <div class="col-md-4">
                         <div class="mb-3">
@@ -100,7 +101,8 @@ $productos_result = $conn->query($sql_productos);
                     <div class="col-md-2">
                         <div class="mb-3">
                             <label class="form-label">Cantidad a sumar:</label>
-                            <input type="number" class="form-control" name="cantidad" required min="1" value="1" id="inputCantidad">
+                            <input type="number" class="form-control" name="cantidad" required min="1" max="1000" value="1" id="inputCantidad">
+                            <small class="text-muted">Máximo 1000 unidades por entrada</small>
                         </div>
                     </div>
                     <div class="col-md-3">
@@ -185,32 +187,19 @@ $productos_result = $conn->query($sql_productos);
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const selectProducto = document.getElementById('selectProducto');
+    const inputCantidad = document.getElementById('inputCantidad');
     const infoStock = document.getElementById('infoStock');
     const infoEspecificaciones = document.getElementById('infoEspecificaciones');
+    const formEntrada = document.getElementById('formEntrada');
     
     // Mostrar información del stock y especificaciones cuando seleccionan producto
     selectProducto.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         const stockActual = selectedOption.getAttribute('data-stock');
-        const unidad = selectedOption.getAttribute('data-unidad');
         const especificaciones = selectedOption.getAttribute('data-especificaciones');
         
         if (stockActual !== null && selectedOption.value !== "") {
-            // Mapeo de unidades amigables
-            const unidades = {
-                'unidad': 'unidades',
-                'caja': 'cajas', 
-                'pack': 'packs',
-                'rollo': 'rollos',
-                'par': 'pares',
-                'gramo': 'gramos',
-                'kilogramo': 'kilogramos',
-                'metro': 'metros',
-                'centimetro': 'centímetros'
-            };
-            
-            const unidadDisplay = unidades[unidad] || unidad;
-            infoStock.textContent = `Stock actual: ${stockActual} ${unidadDisplay}`;
+            infoStock.textContent = `Stock actual: ${stockActual} unidades`;
             infoStock.className = 'text-info ms-3 fw-bold';
             
             // Mostrar especificaciones
@@ -226,6 +215,66 @@ document.addEventListener('DOMContentLoaded', function() {
             infoEspecificaciones.textContent = '';
         }
     });
+    
+    // Validar cantidad en tiempo real
+    inputCantidad.addEventListener('input', function() {
+        const cantidad = parseInt(this.value);
+        
+        if (cantidad > 1000) {
+            this.value = 1000;
+            mostrarAlerta('La cantidad no puede ser mayor a 1000 unidades', 'warning');
+        } else if (cantidad < 1) {
+            this.value = 1;
+            mostrarAlerta('La cantidad debe ser al menos 1 unidad', 'warning');
+        }
+    });
+    
+    // Validar formulario antes de enviar
+    formEntrada.addEventListener('submit', function(e) {
+        const cantidad = parseInt(inputCantidad.value);
+        
+        if (cantidad > 1000) {
+            e.preventDefault();
+            mostrarAlerta('Error: La cantidad no puede ser mayor a 1000 unidades por entrada', 'danger');
+            inputCantidad.focus();
+            return false;
+        }
+        
+        if (cantidad < 1) {
+            e.preventDefault();
+            mostrarAlerta('Error: La cantidad debe ser al menos 1 unidad', 'danger');
+            inputCantidad.focus();
+            return false;
+        }
+        
+        return true;
+    });
+    
+    // Función para mostrar alertas temporales
+    function mostrarAlerta(mensaje, tipo) {
+        // Remover alertas existentes
+        const alertasExistentes = document.querySelectorAll('.alert-temporario');
+        alertasExistentes.forEach(alerta => alerta.remove());
+        
+        // Crear nueva alerta
+        const alerta = document.createElement('div');
+        alerta.className = `alert alert-${tipo} alert-dismissible fade show alert-temporario`;
+        alerta.innerHTML = `
+            <i class="bi bi-exclamation-triangle-fill"></i> ${mensaje}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        // Insertar después del título
+        const titulo = document.querySelector('h2');
+        titulo.parentNode.insertBefore(alerta, titulo.nextSibling);
+        
+        // Auto-remover después de 5 segundos
+        setTimeout(() => {
+            if (alerta.parentNode) {
+                alerta.remove();
+            }
+        }, 5000);
+    }
     
     // Mostrar información inicial si hay un producto seleccionado
     if (selectProducto.value) {

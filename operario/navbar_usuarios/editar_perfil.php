@@ -113,23 +113,6 @@ include '../header_operario.php';
                                 </div>
                             </div>
                         </div>
-                        
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Rol:</label>
-                                    <input type="text" class="form-control" value="<?php echo htmlspecialchars($usuario['rol'] ?? ''); ?>" disabled>
-                                    <small class="text-muted">El rol no puede ser modificado</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Fecha de Registro:</label>
-                                    <input type="text" class="form-control" 
-                                           value="<?php echo isset($usuario['created_at']) ? date('d/m/Y H:i', strtotime($usuario['created_at'])) : ''; ?>" disabled>
-                                </div>
-                            </div>
-                        </div>
 
                         <div class="alert alert-info">
                             <i class="bi bi-info-circle"></i>
@@ -140,8 +123,7 @@ include '../header_operario.php';
                             <button type="submit" class="btn btn-success">
                                 <i class="bi bi-check-circle"></i> Guardar Cambios
                             </button>
-                            <!-- CORREGIDO: Ruta relativa correcta -->
-                            <a href="../navbar_usuarios/mi_perfil.php" class="btn btn-secondary">
+                            <a href="navbar_usuarios/mi_perfil.php" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left"></i> Volver al Perfil
                             </a>
                         </div>

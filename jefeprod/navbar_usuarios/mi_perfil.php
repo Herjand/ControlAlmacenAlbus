@@ -25,7 +25,7 @@ if ($result->num_rows === 0) {
 $datos_usuario = $result->fetch_assoc();
 
 // Incluir header
-include '../header_operario.php';
+include '../header_jefe_produccion.php';
 ?>
 
 <div class="container-fluid">
@@ -59,7 +59,7 @@ include '../header_operario.php';
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Rol:</label>
                                 <p class="form-control-plaintext">
-                                    <span class="badge bg-success">
+                                    <span class="badge bg-warning">
                                         <?php echo htmlspecialchars($datos_usuario['rol'] ?? 'No disponible'); ?>
                                     </span>
                                 </p>
@@ -100,7 +100,7 @@ include '../header_operario.php';
                 </div>
                 <div class="card-body text-center">
                     <div class="mb-4">
-                        <i class="bi bi-person-circle" style="font-size: 80px; color: #6c757d;"></i>
+                        <i class="bi bi-person-gear" style="font-size: 80px; color: #e67e22;"></i>
                     </div>
                     <h5><?php echo htmlspecialchars($datos_usuario['nombre'] ?? 'Usuario'); ?></h5>
                     <p class="text-muted"><?php echo htmlspecialchars($datos_usuario['rol'] ?? 'Rol no definido'); ?></p>

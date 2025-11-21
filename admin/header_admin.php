@@ -135,25 +135,6 @@ $base_url = $protocol . "://" . $host . "/" . $project_folder . "/admin/";
 
         <div class="collapse navbar-collapse" id="navbarUserMenu">
             <ul class="navbar-nav ms-auto">
-                <!-- Notificaciones -->
-                <li class="nav-item dropdown">
-                    <a class="nav-link position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-bell text-white"></i>
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            3
-                            <span class="visually-hidden">notificaciones</span>
-                        </span>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><h6 class="dropdown-header">Notificaciones</h6></li>
-                        <li><a class="dropdown-item" href="#"><small>Nuevo pedido recibido</small></a></li>
-                        <li><a class="dropdown-item" href="#"><small>Stock crítico en productos</small></a></li>
-                        <li><a class="dropdown-item" href="#"><small>Auditoría pendiente</small></a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-center" href="#"><small>Ver todas</small></a></li>
-                    </ul>
-                </li>
-
                 <!-- Usuario -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">

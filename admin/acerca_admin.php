@@ -104,7 +104,6 @@ include 'header_admin.php';
                             <ul class="text-muted small">
                                 <li>Barbijos quirúrgicos</li>
                                 <li>Tapa ojos y oídos</li>
-                                <li>Esponjas médicas</li>
                             </ul>
                         </div>
                     </div>
@@ -160,7 +159,7 @@ include 'header_admin.php';
                     <p class="text-muted small">v2.1.0 - Albus Gestión de Almacén</p>
                     
                     <h6>Desarrollado para</h6>
-                    <p class="text-muted small">Albus S.R.L. - Producción de Insumos Médicos</p>
+                    <p class="text-muted small">Albus S.A. - Producción de Insumos Médicos</p>
                     
                     <h6>Funcionalidades Principales</h6>
                     <ul class="text-muted small">

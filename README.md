@@ -13,6 +13,7 @@ Sistema PHP para gestión de almacén con roles de administrador y operario.
 ## Estructura de archivos
 - `/admin` - Panel de administración
 - `/operario` - Panel de operario
+- `/jefeprod` - Panel de jefe de producción
 - `/tcpdf` - Librería para generar PDF
 
 ## Instalación
